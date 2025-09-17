@@ -103,11 +103,15 @@ We will be using Java, with our program being dependent on Spring and SpringBoot
 ## 3. Requirements
 
 ### 3.1 Functional Requirements 
-- FR2: The system shall allow customers to browse through a list of games being displayed
-   - 	The list of games will have a search and filter 
+-	FR0:  The system shall allow users to create accounts as either a customer or a video game developer
+  - Each account will have a unique identifier assigned at the time of creation
+-	FR1: The system shall allow developers to display a new video game and provide details including title, description, status, and price
+-	FR2: The system shall allow customers to browse through a list of games being displayed
+  -	The list of games will have a search and filter 
 -	FR3: The system shall allow customers to subscribe to any video game of their choice.
-  -  A customer may unsubscribe from a game if they no longer have interest in the game. 
-- FR5: The system shall allow customers to rate and review video games based on their personal enjoyment. 
+  -	 A customer may unsubscribe from a game if they no longer have interest in the game. 
+-	FR4: Users are able to modify their profiles at any time 
+-	FR5: The system shall allow customers to rate and review video games based on their personal enjoyment. 
 -	FR6: The system shall allow developers to respond to a review 
 
 
