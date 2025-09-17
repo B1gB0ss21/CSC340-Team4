@@ -56,10 +56,6 @@ Developer-oriented requirements describe the system from a software developer’
 
 Describe the purpose of the SRS and its intended audience.
 
-### 1.2 Product Scope
-Identify the product whose software requirements are specified in this document, including the revision or release number. Explain what the product that is covered by this SRS will do, particularly if this SRS describes only part of the system or a single subsystem. 
-Provide a short description of the software being specified and its purpose, including relevant benefits, objectives, and goals. Relate the software to corporate goals or business strategies. If a separate vision and scope document is available, refer to it rather than duplicating its contents here.
-
 
 ### 1.3 Definitions, Acronyms and Abbreviations                                                                                                                                              
 
@@ -87,35 +83,22 @@ Provide a short description of the software being specified and its purpose, inc
 https://spring.io/guides
 ### 1.5 Document Overview
 Section 1 is a general introduction to the document, intended for any readers. Section 2 is focused on the product and its features. This section is for customers and business stakeholders. Section 3 specifies the requirements and constraints for the product and development process. This section is intended for all stakeholders, especially the development team. 
+
 ## 2. Product Overview
 GamerBridge is a web-based platform designed to help video game developers showcase their games and receive feedback from customers. Customers can browse different profiles of video game developers, view the status of games, subscribe to their favorite developers, and leave reviews on the games based on their personal experience with the game. Video game developers can manage released games that they display, update game information, and track player engagement.  
-### 2.1 Product Functions
 
-List any other documents or Web addresses to which this SRS refers. These may include user interface style guides, contracts, standards, system requirements specifications, use case documents, or a vision and scope document. Provide enough information so that the reader could access a copy of each reference, including title, author, version number, date, and source or location.
-
-### 1.5 Document Overview
-Describe what the rest of the document contains and how it is organized.
-
-## 2. Product Overview
-This section should describe the general factors that affect the product and its requirements. This section does not state specific requirements. Instead, it provides a background for those requirements, which are defined in detail in Section 3, and makes them easier to understand.
 
 ### 2.1 Product Functions
-Summarize the major functions the product must perform or must let the user perform. Details will be provided in Section 3, so only a high level summary (such as a bullet list) is needed here. Organize the functions to make them understandable to any reader of the SRS. A picture of the major groups of related requirements and how they relate, such as a top level data flow diagram or object class diagram, is often effective.
-main
+GamerBridge allows developers to create and customize video games that they offer.  They are able to display games, update the status of the games, and manage their profiles. Customers are able to subscribe to their preferred developers, rate video games, and manage their profiles. 
 
 ### 2.2 Product Constraints
-This subsection should provide a general description of any other items that will limit the developer’s options. These may include:  
+At this point, the program will only run on a computer with Java jdk 21 installed. The full scope of the project is hopefully realized; however, the team has a deadline of about 10 weeks, which could lead to feature cuts. The program would have a challenge scaling, as the current plan is to use a free version of a Postgresql database to store the information.
 
-* Interfaces to users, other applications or hardware.  
-* Quality of service constraints.  
-* Standards compliance.  
-* Constraints around design or implementation.
-  
 ### 2.3 User Characteristics
-Identify the various user classes that you anticipate will use this product. User classes may be differentiated based on frequency of use, subset of product functions used, technical expertise, security or privilege levels, educational level, or experience. Describe the pertinent characteristics of each user class. Certain requirements may pertain only to certain user classes. Distinguish the most important user classes for this product from those who are less important to satisfy.
+Our website does not require that the users have any prior knowledge of the application or computers besides how to operate a web browser. Users interested in rating and following the process of video game development should be able to master the application quickly. 
 
 ### 2.4 Assumptions and Dependencies
-List any assumed factors (as opposed to known facts) that could affect the requirements stated in the SRS. These could include third-party or commercial components that you plan to use, issues around the development or operating environment, or constraints. The project could be affected if these assumptions are incorrect, are not shared, or change. Also identify any dependencies the project has on external factors, such as software components that you intend to reuse from another project, unless they are already documented elsewhere (for example, in the vision and scope document or the project plan).
+We will be using Java, with our program being dependent on Spring and SpringBoot, and RestAPI to connect to external APIs and developed with VS Code. The application will also use an external API that will help enrich customers with information on video games. (IGDB).  
 
 ## 3. Requirements
 
