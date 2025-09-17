@@ -54,7 +54,7 @@ Developer-oriented requirements describe the system from a software developer’
 ### 1.2 Product Scope
 “GamerBridge” is a web-based platform designed to help video game developers showcase their games and receive feedback from customers. The system is a web-based application that creates an environment for producers and consumers of video games to connect. Video game developers are able to connect with a larger population of people and receive more immediate feedback of their products. Over anything, we want to create a comfortable user experience as well as providing a healthy environment.  
 
-Describe the purpose of the SRS and its intended audience.
+
 
 
 ### 1.3 Definitions, Acronyms and Abbreviations                                                                                                                                              
