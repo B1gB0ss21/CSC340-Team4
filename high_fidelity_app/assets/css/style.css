@@ -237,3 +237,18 @@ textarea {
   background: #4b5563;
   transform: scale(1.05);
 }
+.edit-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  transition: background 0.3s;
+}
+
+.edit-btn:hover {
+  background: #1d4ed8;
+}
