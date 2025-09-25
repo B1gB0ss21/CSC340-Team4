@@ -117,13 +117,24 @@
     </div>
 
     <!-- Step 1 -->
+    
+
     <div class="form-step active">
       <label for="email">Email</label>
       <input type="email" id="email" placeholder="Enter your email" required />
       
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="Enter your password" required />
+     
+      <!--
+      <p style="text-align:center; margin-bottom:1rem;">
+        <a href="dlogin.html" class="btn btn-secondary">Developer Login</a>
+      </p>
+      -->
       
+      <button class="btn" onclick="window.location.href='dlogin.html'">Developer Login</button>
+
+
       <button class="btn" onclick="nextStep()">Next</button>
     </div>
 
@@ -151,6 +162,9 @@
       
       <button class="btn-secondary" onclick="prevStep()">Back</button>
       <button class="btn" onclick="finishLogin()">Finish</button>
+
+     
+
     </div>
   </div>
 
@@ -186,6 +200,8 @@
       
 
     }
+
+
   </script>
 </body>
 </html>

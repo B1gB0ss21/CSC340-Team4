@@ -124,6 +124,8 @@ body {
   font-weight: bold;
 }
 
+
+
 /* Trending Sidebar */
 .trending {
   flex: 1;
@@ -171,4 +173,67 @@ body {
 
 .site-footer nav a:hover {
   color: var(--color-primary);
+}
+.status-badge {
+  margin-top: 1rem; /* pushes it down under the text */
+  display: inline-block;
+  background: transparent;
+  color: #ff66cc; /* neon pink */
+  padding: 8px 16px;
+  border: 2px solid #ff66cc;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px #ff66cc, 0 0 20px #ff66cc, 0 0 40px #ff1ab3;
+  animation: neon-pulse 1.5s infinite alternate;
+}
+
+@keyframes neon-pulse {
+  from {
+    box-shadow: 0 0 6px #ff66cc, 0 0 15px #ff66cc, 0 0 30px #ff1ab3;
+  }
+  to {
+    box-shadow: 0 0 12px #ff66cc, 0 0 25px #ff66cc, 0 0 50px #ff1ab3;
+  }
+}
+
+.btn {
+  background: #2563eb;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+  background: #1d4ed8;
+  transform: scale(1.05);
+}
+
+textarea {
+  background: #0d1117;
+  color: #e5e7eb;
+  border: 1px solid #2563eb;
+  font-size: 1rem;
+}
+.btn-secondary {
+  background: #374151;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+  transform: scale(1.05);
 }
