@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GamerBridge - Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0d1117;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .form-container {
+      background: #1e2a38;
+      padding: 2rem;
+      border-radius: 12px;
+      width: 350px;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #2563eb;
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    label {
+      display: block;
+      margin: 0.5rem 0 0.25rem;
+      color: #e5e7eb;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #0d1117;
+      color: #e5e7eb;
+      margin-bottom: 1rem;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #2563eb;
+    }
+
+    .btn {
+      background: #2563eb;
+      color: white;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .step-indicators {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .step-indicators span {
+      height: 10px;
+      width: 10px;
+      margin: 0 4px;
+      background: #374151;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .step-indicators span.active {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>GamerBridge Login</h2>
+    <div class="step-indicators">
+      <span class="active"></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="form-step active">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your email" required />
+      
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter your password" required />
+      
+      <button class="btn" onclick="nextStep()">Next</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="form-step">
+      <label for="dob">Date of Birth</label>
+      <input type="date" id="dob" required />
+      
+      <button class="btn-secondary" onclick="prevStep()">Back</button>
+      <button class="btn" onclick="nextStep()">Next</button>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="form-step">
+      <label for="genre">Favorite Genre</label>
+      <select id="genre" required>
+        <option value="">Select one...</option>
+        <option>Action</option>
+        <option>RPG</option>
+        <option>Strategy</option>
+        <option>Sports</option>
+        <option>Adventure</option>
+        <option>Shooter</option>
+      </select>
+      
+      <button class="btn-secondary" onclick="prevStep()">Back</button>
+      <button class="btn" onclick="finishLogin()">Finish</button>
+    </div>
+  </div>
+
+  <script>
+    let currentStep = 0;
+    const steps = document.querySelectorAll(".form-step");
+    const indicators = document.querySelectorAll(".step-indicators span");
+
+    function showStep(step) {
+      steps.forEach((s, i) => {
+        s.classList.toggle("active", i === step);
+        indicators[i].classList.toggle("active", i === step);
+      });
+    }
+
+    function nextStep() {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    }
+
+    function finishLogin() {
+      // Redirect to homepage
+      window.location.href = "index.html";
+      
+
+    }
+  </script>
+</body>
+</html>

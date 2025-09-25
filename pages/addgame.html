@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Game - GamerBridge</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1e2a38; /* deep blue */
+      color: #e5e7eb;
+    }
+
+    .addgame-container {
+      max-width: 600px;
+      margin: 3rem auto;
+      background: #243447;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2563eb;
+      margin-bottom: 1.5rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border: none;
+      border-radius: 8px;
+      background: #0d1117;
+      color: #e5e7eb;
+      margin-bottom: 1rem;
+    }
+
+    input:focus, textarea:focus {
+      outline: 2px solid #2563eb;
+    }
+
+    .status-options {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .btn {
+      background: #2563eb;
+      color: white;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <!-- Nav -->
+  <header class="site-header" style="background:#0d1117;">
+    <div class="logo">🎮 GamerBridge</div>
+    <nav class="navbar">
+      <a href="../index.html">Home</a>
+      <a href="#">Reviews</a>
+      <a href="gamelist.html">Games</a>
+      <a href="#">News</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <!-- Form -->
+  <main class="addgame-container">
+    <h2>Add New Game</h2>
+    <form>
+      <label for="game-picture">Game Picture URL</label>
+      <input type="text" id="game-picture" placeholder="assets/img/mygame.png">
+
+      <label for="game-title">Game Title</label>
+      <input type="text" id="game-title" placeholder="Enter game title">
+
+      <label for="game-desc">Game Description</label>
+      <textarea id="game-desc" rows="4" placeholder="Enter game description"></textarea>
+
+      <label>Status</label>
+      <div class="status-options">
+        <label><input type="radio" name="status" value="Released"> Released</label>
+        <label><input type="radio" name="status" value="Demo"> Demo</label>
+        <label><input type="radio" name="status" value="Alpha"> Alpha</label>
+      </div>
+
+      <button type ="button" class="btn" onclick="window.location.href='nomanssky.html'">Post</button>
+
+    </form>
+  </main>
+
+  <footer class="site-footer" style="background:#0d1117;">
+    <p>© 2025 GamerBridge</p>
+  </footer>
+
+  <script>
+    function redirectToProfile() {
+      window.location.href = "devprof.html";
+    }
+  </script>
+
+</body>
+</html>

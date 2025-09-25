@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>No Man's Sky - GamerBridge</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="site-header">
+    <div class="logo">🎮 GamerBridge</div>
+    <nav class="navbar">
+      <a href="../index.html">Home</a>
+      <a href="#">Reviews</a>
+      <a href="gamelist.html">Explore Games</a>
+    </nav>
+  </header>
+
+    <!-- Status Badge -->
+    <div class="status-badge">Released</div>
+
+  <!-- Game Banner -->
+  <section class="hero" style="text-align:center;">
+    <img src="../assets/img/game1.jpg" alt="Sky Raiders Banner" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px;">
+    <h1>No Man's Sky</h1>
+    <p>A thrilling aerial combat experience that pushes boundaries.</p>
+  </section>
+
+  <!-- Review Section -->
+  <section class="games-section">
+    <h2>Review</h2>
+    <p>
+      The game has a suprisingly rich and engaging progression system with tech that you buy and install.
+    </p>
+    <p><strong>Rating:</strong> ⭐ 9.2 / 10</p>
+
+    <button id="review-btn" class="btn">Leave a Review</button>
+</section>
+
+<!-- Add to List Button -->
+<button id="add-to-list" class="btn btn-secondary">+ Add to My List</button>
+<p id="list-status" style="margin-top:0.5rem; display:none; color:#16a34a; font-weight:bold;">
+  ✅ Added to your list
+</p>
+
+  <!--Review Form -->
+  <div id="review-form" style="display:none; margin-top:1rem;">
+    <div class="star-rating">
+      <input type="radio" id="star5" name="rating" value="5"><label for="star10">⭐</label>
+      <input type="radio" id="star5" name="rating" value="5"><label for="star9">⭐</label>
+      <input type="radio" id="star5" name="rating" value="5"><label for="star8">⭐</label>
+      <input type="radio" id="star5" name="rating" value="5"><label for="star7">⭐</label>
+      <input type="radio" id="star5" name="rating" value="5"><label for="star6">⭐</label>
+      <input type="radio" id="star5" name="rating" value="5"><label for="star5">⭐</label>
+      <input type="radio" id="star4" name="rating" value="4"><label for="star4">⭐</label>
+      <input type="radio" id="star3" name="rating" value="3"><label for="star3">⭐</label>
+      <input type="radio" id="star2" name="rating" value="2"><label for="star2">⭐</label>
+      <input type="radio" id="star1" name="rating" value="1"><label for="star1">⭐</label>
+    </div>
+    <textarea placeholder="Write your review..." rows="4" 
+      style="width:100%; padding:0.5rem; border-radius:6px; resize: vertical;"></textarea>
+    <br>
+    <button class="btn" style="margin-top:0.5rem;">Submit Review</button>
+  </div>
+</section>
+
+
+
+<!--SS-->
+    <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-top:1rem;">
+      <img src="../assets/img/game1.jpg" alt="Sky Raiders screenshot 1" style="width:48%; border-radius:8px;">
+      
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>© 2025 GamerBridge</p>
+  </footer>
+
+  <!--Script for button-->
+
+  <script>
+    const reviewBtn = document.getElementById("review-btn");
+    const reviewForm = document.getElementById("review-form");
+    const addToListBtn = document.getElementById("add-to-list");
+    const listStatus = document.getElementById("list-status");
+
+
+
+    reviewBtn.addEventListener("click", () => {
+      reviewForm.style.display = reviewForm.style.display === "none" ? "block" : "none";
+      reviewBtn.textContent = reviewForm.style.display === "block" 
+        ? "Cancel Review" 
+        : "Leave a Review";
+    });
+
+
+        addToListBtn.addEventListener("click", () => {
+    if (listStatus.style.display === "none") {
+      listStatus.style.display = "block";
+      addToListBtn.textContent = "✔ Added";
+      addToListBtn.disabled = true;
+    }
+
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,239 @@
+/* Dark Theme GamerBridge Styles */
+
+/* Global */
+:root {
+  --color-bg: #0d1117;
+  --color-bg-accent: #1e2a38;
+  --color-primary: #2563eb;
+  --color-text: #e5e7eb;
+  --color-muted: #9ca3af;
+  --color-highlight: #facc15;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+/* Header */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: black;
+  padding: 1rem 2rem;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar a {
+  color: var(--color-text);
+  margin-left: 1rem;
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.navbar a:hover {
+  color: var(--color-primary);
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(145deg, var(--color-bg), var(--color-bg-accent));
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  color: var(--color-muted);
+  margin-bottom: 2rem;
+}
+
+.btn {
+  background: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.btn:hover {
+  background: #1d4ed8;
+}
+
+/* Games Section */
+.games-section {
+  padding: 3rem 2rem;
+}
+
+.games-section h2 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.games-layout {
+  display: flex;
+  gap: 2rem;
+}
+
+.games-grid {
+  flex: 3;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.game-card {
+  background: var(--color-bg-accent);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: transform 0.3s;
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+}
+
+.game-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.game-info {
+  padding: 1rem;
+}
+
+.rating {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: var(--color-highlight);
+  font-weight: bold;
+}
+
+
+
+/* Trending Sidebar */
+.trending {
+  flex: 1;
+  background: var(--color-bg-accent);
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+}
+
+.trending h3 {
+  margin-bottom: 1rem;
+}
+
+.trending ul {
+  list-style: none;
+  padding: 0;
+}
+
+.trending li {
+  margin-bottom: 0.75rem;
+}
+
+.trending a {
+  color: var(--color-text);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.trending a:hover {
+  color: var(--color-primary);
+}
+
+/* Footer */
+.site-footer {
+  background: black;
+  text-align: center;
+  padding: 1.5rem;
+  margin-top: 2rem;
+}
+
+.site-footer nav a {
+  color: var(--color-muted);
+  margin: 0 1rem;
+  text-decoration: none;
+}
+
+.site-footer nav a:hover {
+  color: var(--color-primary);
+}
+.status-badge {
+  margin-top: 1rem; /* pushes it down under the text */
+  display: inline-block;
+  background: transparent;
+  color: #ff66cc; /* neon pink */
+  padding: 8px 16px;
+  border: 2px solid #ff66cc;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  box-shadow: 0 0 8px #ff66cc, 0 0 20px #ff66cc, 0 0 40px #ff1ab3;
+  animation: neon-pulse 1.5s infinite alternate;
+}
+
+@keyframes neon-pulse {
+  from {
+    box-shadow: 0 0 6px #ff66cc, 0 0 15px #ff66cc, 0 0 30px #ff1ab3;
+  }
+  to {
+    box-shadow: 0 0 12px #ff66cc, 0 0 25px #ff66cc, 0 0 50px #ff1ab3;
+  }
+}
+
+.btn {
+  background: #2563eb;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+  background: #1d4ed8;
+  transform: scale(1.05);
+}
+
+textarea {
+  background: #0d1117;
+  color: #e5e7eb;
+  border: 1px solid #2563eb;
+  font-size: 1rem;
+}
+.btn-secondary {
+  background: #374151;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+  transform: scale(1.05);
+}

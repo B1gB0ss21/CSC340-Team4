@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top Games - GamerBridge</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    body {
+      background: #0d1117;
+      color: #e5e7eb;
+      font-family: Arial, sans-serif;
+      margin: 0;
+    }
+
+    .games-section {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .games-section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #2563eb;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr); /* always 3 per row */
+      gap: 1.5rem;
+    }
+
+    .game-card {
+      position: relative;
+      background: #1e2a38;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      transition: transform 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .game-card:hover {
+      transform: scale(1.05);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .game-info {
+      padding: 1rem;
+    }
+
+    .game-info h3 {
+      margin: 0;
+      color: #fff;
+    }
+
+    .game-info p {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+    }
+
+    .rating {
+      display: inline-block;
+      margin-top: 0.5rem;
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    /* Interactive + / check button */
+    .game-action {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #2563eb;
+      color: white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    .game-action:hover {
+      background: #1d4ed8;
+      transform: scale(1.2) rotate(15deg);
+    }
+
+    .game-action.clicked {
+      background: #16a34a; /* green when selected */
+      content: "✔";
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="site-header">
+    <div class="logo">🎮 GamerBridge</div>
+    <nav class="navbar">
+      <a href="../index.html">Home</a>
+      <a href="gamelist.html"> Games</a>
+      <a href="#">News</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <!-- Games List -->
+  <section class="games-section">
+    <h2>Top Games</h2>
+    <div class="game-grid">
+     
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/game1.jpg" alt="No Man's Sky">
+        <div class="game-info">
+          <h3><a href="nomanssky.html" style="color:#fff; text-decoration:none;">No Man's Sky</a></h3>
+          <p>Explore an infinite universe filled with adventure.</p>
+          <span class="rating">⭐ 9.0</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/game3.jpg" alt="CyberQuest">
+        <div class="game-info">
+          <h3>CyberQuest</h3>
+          <p>An immersive open-world cyberpunk RPG.</p>
+          <span class="rating">⭐ 8.8</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/sraiders.jpeg" alt="Sky Raiders">
+        <div class="game-info">
+          <h3>Sky Raiders</h3>
+          <p>Thrilling aerial combat with stunning visuals.</p>
+          <span class="rating">⭐ 9.2</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/reddead.jpeg" alt="Echo Realms">
+        <div class="game-info">
+          <h3>Read Dead Redemption</h3>
+          <p>"An unforgettable Wild West adventure of outlaws, honor, and open-world freedom."</p>
+          <span class="rating">⭐ 8.5</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/GOW.jpeg" alt="Dungeon Forge">
+        <div class="game-info">
+          <h3>God Of War: Ragnarok</h3>
+          <p>Embark on a journey with Kratos and his son in this Nose saga</p>
+          <span class="rating">⭐ 9.7</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/deathstrand.jpeg" alt="Starborn">
+        <div class="game-info">
+          <h3>Death Stranding</h3>
+          <p>Space strategy with exploration and conquest.</p>
+          <span class="rating">⭐ 8.9</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/SHF.jpeg" alt="Mystic Valley">
+        <div class="game-info">
+          <h3>Silent Hill f</h3>
+          <p>Chilling horror set in 1960s Japan</p>
+          <span class="rating">⭐ 8.6</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/GCGC.jpeg" alt="Rogue Horizon">
+        <div class="game-info">
+          <h3>Good Coffee, Great Coffee</h3>
+          <p>Brew, serve, and Build your cafe' empire.</p>
+          <span class="rating">⭐ 8.4</span>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div class="game-action">+</div>
+        <img src="../assets/img/COTL.jpeg" alt="Titan Clash">
+        <div class="game-info">
+          <h3> Cult Of The Lamb</h3>
+          <p>DESTROY and BUILD your cult</p>
+          <span class="rating">⭐ 9.1</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>© 2025 GamerBridge</p>
+  </footer>
+
+  <script>
+    // Add click interaction to + buttons
+    document.querySelectorAll(".game-action").forEach(action => {
+      action.addEventListener("click", () => {
+        action.textContent = action.textContent === "+" ? "✔" : "+";
+        action.classList.toggle("clicked");
+      });
+    });
+  </script>
+</body>
+</html>
