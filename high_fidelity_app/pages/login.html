@@ -123,6 +123,10 @@
       
       <label for="password">Password</label>
       <input type="password" id="password" placeholder="Enter your password" required />
+
+      <button class="btn" onclick="window.location.href='dlogin.html'; return false;">
+        👨‍💻 Developer Login
+      </button>
       
       <button class="btn" onclick="nextStep()">Next</button>
     </div>
@@ -150,9 +154,11 @@
       </select>
       
       <button class="btn-secondary" onclick="prevStep()">Back</button>
-      <button class="btn" onclick="finishLogin()">Finish</button>
+      <button class="btn" onclick="finishLogin()" >Finish</button>
     </div>
   </div>
+
+
 
   <script>
     let currentStep = 0;
@@ -185,7 +191,10 @@
       window.location.href = "index.html";
       
 
+
     }
+   
+</script>
   </script>
 </body>
 </html>
