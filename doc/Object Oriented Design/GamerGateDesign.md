@@ -47,14 +47,15 @@ A developer will be able to view several statistics such as total revenue, total
 A customer can sign up to create their profile with their name, email, password, and address. Emails must be unique.
 ##### 2.2.2.2 Log In
 A customer shall be able to sign in using their registred email and password. After logging in, the customer shall be directed their dashboard where they see an overview of their subscriptions.
-##### 2.2.2.3 Browse Produce Boxes
+##### 2.2.2.3 Browse Games
 A customer shall be able to view available games. They can do this from the home page or using a search function. They can also filter boxes by name, descriptions, or generes. They will also be able to select one game and view more details.
-##### 2.2.1.4 Subscribe to Produce Box
+##### 2.2.1.4 Subscribe to Games
 Upon selecting a game, a customer shall be able to subscribe for the box using a one-click action. This box will then appear on their dashboard, and they will be able to ammend the subscription.
-##### 2.2.1.5 Review Produce Box
+##### 2.2.1.5 Review Games
 A customer may write a review for a game they subscribed to. They will be able to rate the box based on graphics and gameplay.
 
 ## 3. UML Class Diagram
 ![UML Class Diagram](https://github.com/B1gB0ss21/CSC340-Team4/blob/main/doc/Object%20Oriented%20Design/class-diagram.png)
 ## 4. Database Schema
 ![UML Class Diagram](https://github.com/B1gB0ss21/CSC340-Team4/blob/main/doc/Object%20Oriented%20Design/schema.png)
+
