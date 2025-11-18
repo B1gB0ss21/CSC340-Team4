@@ -1,48 +1,52 @@
 package com.backend_api.subscription;
 
+import jakarta.persistence.*;
+import java.time.LocalDate;
 import com.backend_api.customer.Customer;
 import com.backend_api.games.Games;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.time.LocalDateTime;
-
-@Data
-@NoArgsConstructor
 @Entity
 @Table(name = "subscriptions")
 public class Subscription {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    @JsonIgnoreProperties("subscriptions")
+    private String planName;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    private boolean active;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "game_id", nullable = false)
-    @JsonIgnoreProperties({"subscriptions", "reviews"})
-    private Games games;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "game_id")
+    private Games game;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private SubscriptionType type;
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    @NotNull
-    private LocalDateTime startDate;
+    public String getPlanName() { return planName; }
+    public void setPlanName(String planName) { this.planName = planName; }
 
-    private LocalDateTime endDate;
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 
-    @NotNull
-    private boolean active = true;
-}
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 
-enum SubscriptionType {
-    ONE_TIME,
-    MONTHLY
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
+
+    public Customer getCustomer() { return customer; }
+    public void setCustomer(Customer customer) { this.customer = customer; }
+
+    public Games getGame() { return game; }
+    public void setGame(Games game) { this.game = game; }
 }

@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GamerBridge - Developer Sign Up</title>
+  <style>
+    body{font-family:Arial;background:#0d1117;color:#e5e7eb;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .form-container{background:#1e2a38;padding:2rem;border-radius:12px;width:420px;box-shadow:0 0 20px rgba(37,99,235,0.3)}
+    h2{text-align:center;color:#2563eb;margin-bottom:1rem}
+    label{display:block;margin-top:.5rem;color:#e5e7eb}
+    input,textarea{width:100%;padding:.6rem;border-radius:8px;border:none;background:#0d1117;color:#e5e7eb;margin-bottom:.75rem}
+    textarea{min-height:80px}
+    .btn{background:#10b981;color:#fff;padding:.7rem;border:none;border-radius:8px;width:100%;cursor:pointer}
+    .help{color:#9ca3af;margin-top:.5rem;font-size:.9rem;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Developer Sign Up</h2>
+    <form id="signupForm">
+      <label for="dev-name">Name</label>
+      <input id="dev-name" required>
+
+      <label for="dev-email">Email</label>
+      <input id="dev-email" type="email" required>
+
+      <label for="dev-password">Password</label>
+      <input id="dev-password" type="password" required>
+
+      <label for="dev-bio">Bio</label>
+      <textarea id="dev-bio" placeholder="Short bio or studio blurb"></textarea>
+
+      <label for="dev-avatar">Avatar URL</label>
+      <input id="dev-avatar" placeholder="https://.../avatar.jpg">
+
+      <button class="btn" type="submit">Create account</button>
+      <div id="status" class="help" aria-live="polite"></div>
+    </form>
+  </div>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.getElementById('status');
+  status.textContent = '';
+  const payload = {
+    name: document.getElementById('dev-name').value.trim(),
+    email: document.getElementById('dev-email').value.trim(),
+    password: document.getElementById('dev-password').value,
+    bio: document.getElementById('dev-bio').value.trim() || null,
+    avatarUrl: document.getElementById('dev-avatar').value.trim() || null
+  };
+
+  try {
+    const res = await fetch('/api/developers', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(payload)
+    });
+
+    const text = await res.text();
+    let body;
+    try { body = JSON.parse(text); } catch(e){ body = text; }
+
+    if (res.ok) {
+      // server created developer -> store and redirect
+      localStorage.setItem('developerProfile', JSON.stringify(body));
+      location.href = 'devpro.html';
+      return;
+    }
+
+    // show server error and fallback to local stub if user wants
+    status.textContent = 'Signup failed: ' + (body && (body.message || body.error) ? JSON.stringify(body) : (res.statusText || text));
+    // fallback: create local stub and redirect after short delay
+    const stub = { id: Date.now(), name: payload.name || payload.email.split('@')[0], email: payload.email, bio: payload.bio, avatarUrl: payload.avatarUrl };
+    localStorage.setItem('developerProfile', JSON.stringify(stub));
+    setTimeout(()=> location.href='devpro.html', 900);
+  } catch (err) {
+    console.warn(err);
+    const stub = { id: Date.now(), name: payload.name || payload.email.split('@')[0], email: payload.email, bio: payload.bio, avatarUrl: payload.avatarUrl };
+    localStorage.setItem('developerProfile', JSON.stringify(stub));
+    location.href = 'devpro.html';
+  }
+});
+</script>
+</body>
+</html>

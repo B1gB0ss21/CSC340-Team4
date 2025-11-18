@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     List<Customer> findByDateOfBirthContaining(String dob);
-    boolean existsByEmail(String email);
     Optional<Customer> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

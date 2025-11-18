@@ -1,68 +1,87 @@
-package com.backend_api.subscription;
+package com.backend_api;
 
-import com.backend_api.customer.Customer;
-import com.backend_api.customer.CustomerService;
-import com.backend_api.developer.Developer;
-import com.backend_api.developer.DeveloperService;
-import com.backend_api.games.Games;
-import com.backend_api.games.GamesService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/subscriptions")
-@RequiredArgsConstructor
+@RequestMapping("/api/customers/{customerId}/subscriptions")
 public class SubscriptionController {
+
+    private static final Logger log = LoggerFactory.getLogger(SubscriptionController.class);
     private final SubscriptionService subscriptionService;
-    private final GamesService gamesService;
-    private final CustomerService customerService;
-    private final DeveloperService developerService;
+
+    public SubscriptionController(SubscriptionService subscriptionService) {
+        this.subscriptionService = subscriptionService;
+    }
 
     @PostMapping
-    public ResponseEntity<Subscription> createSubscription(@Valid @RequestBody Subscription subscription) {
-        Subscription created = subscriptionService.createSubscription(subscription);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<?> subscribe(
+            @PathVariable("customerId") Long customerId,
+            @RequestBody Map<String, Object> body,
+            HttpSession session) {
+
+        Object sess = session.getAttribute("customerId");
+        log.info("subscribe requested: pathCustomer={}, sessionCustomer={}, body={}", customerId, sess, body);
+
+        Long sessionCustomerId = null;
+        try { sessionCustomerId = Long.valueOf(String.valueOf(sess)); } catch (Exception ignored) {}
+
+        if (sessionCustomerId == null || !sessionCustomerId.equals(customerId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "not authorized"));
+        }
+
+        Object g = body.get("gameId");
+        if (g == null) return ResponseEntity.badRequest().body(Map.of("error", "gameId required"));
+        Long gameId = Long.valueOf(String.valueOf(g));
+        String plan = body.getOrDefault("planName", "basic").toString();
+
+        boolean created = subscriptionService.addSubscription(customerId, gameId, plan);
+        return ResponseEntity.status(created ? 201 : 200).body(Map.of("ok", true, "created", created, "gameId", gameId));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Subscription> updateSubscription(@PathVariable Long id,
-                                                           @Valid @RequestBody Subscription subscriptionDetails) {
-        Subscription updated = subscriptionService.updateSubscription(id, subscriptionDetails);
-        if (updated == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(updated);
+    @DeleteMapping
+    public ResponseEntity<?> unsubscribe(
+            @PathVariable("customerId") Long customerId,
+            @RequestBody(required = false) Map<String, Object> body,
+            HttpSession session) {
+
+        Object sess = session.getAttribute("customerId");
+        log.info("unsubscribe requested: pathCustomer={}, sessionCustomer={}, body={}", customerId, sess, body);
+
+        Long sessionCustomerId = null;
+        try { sessionCustomerId = Long.valueOf(String.valueOf(sess)); } catch (Exception ignored) {}
+
+        if (sessionCustomerId == null || !sessionCustomerId.equals(customerId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "not authorized"));
+        }
+
+        Object g = body != null ? body.get("gameId") : null;
+        if (g == null) return ResponseEntity.badRequest().body(Map.of("error", "gameId required"));
+        Long gameId = Long.valueOf(String.valueOf(g));
+
+        boolean removed = subscriptionService.removeSubscription(customerId, gameId);
+        return ResponseEntity.ok(Map.of("ok", true, "removed", removed, "gameId", gameId));
     }
 
-    @PostMapping("/{id}/cancel")
-    public ResponseEntity<Void> cancelSubscription(@PathVariable Long id) {
-        boolean ok = subscriptionService.cancelSubscription(id);
-        if (!ok) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok().build();
-    }
+    @GetMapping
+    public ResponseEntity<?> list(@PathVariable("customerId") Long customerId, HttpSession session) {
+        Object sess = session.getAttribute("customerId");
+        log.info("list subscriptions: pathCustomer={}, sessionCustomer={}", customerId, sess);
 
-    @GetMapping("/customer/{customerId}")
-    public ResponseEntity<List<Subscription>> getCustomerSubscriptions(@PathVariable Long customerId) {
-        Customer customer = customerService.getCustomerById(customerId);
-        if (customer == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(subscriptionService.getActiveSubscriptionsByCustomer(customer));
-    }
+        Long sessionCustomerId = null;
+        try { sessionCustomerId = Long.valueOf(String.valueOf(sess)); } catch (Exception ignored) {}
 
-    @GetMapping("/game/{gameId}")
-    public ResponseEntity<List<Subscription>> getGameSubscriptions(@PathVariable Long gameId) {
-        Games game = gamesService.getGamesById(gameId);
-        if (game == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(subscriptionService.getSubscriptionsByGames(game));
-    }
+        if (sessionCustomerId == null || !sessionCustomerId.equals(customerId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "not authorized"));
+        }
 
-    @GetMapping("/developer/{developerId}")
-    public ResponseEntity<List<Subscription>> getDeveloperSubscriptions(@PathVariable Long developerId) {
-        Developer developer = developerService.getDeveloperById(developerId);
-        if (developer == null) return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(subscriptionService.getSubscriptionsByDeveloper(developer));
+        List<Map<String, Object>> rows = subscriptionService.listSubscriptions(customerId);
+        return ResponseEntity.ok(rows);
     }
 }

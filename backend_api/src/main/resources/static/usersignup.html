@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign up — GamerBridge</title>
+  <style>
+    body{font-family:Arial;background:#0d1117;color:#e5e7eb;padding:24px}
+    .card{max-width:720px;margin:24px auto;padding:20px;background:#0f1724;border-radius:8px}
+    label{display:block;margin-top:10px;color:#cbd5e1}
+    input{width:100%;padding:10px;margin-top:6px;border-radius:6px;border:1px solid #233040;background:#071022;color:#e5e7eb}
+    button{margin-top:14px;padding:10px 14px;border-radius:8px;border:none;background:#10b981;color:#fff;cursor:pointer}
+    pre{color:#f88;white-space:pre-wrap;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="card" role="form" aria-labelledby="t">
+    <h2 id="t">Create account</h2>
+
+    <label>Name<input id="name" /></label>
+    <label>Email<input id="email" type="email" /></label>
+    <label>Password<input id="password" type="password" /></label>
+    <label>Date of birth<input id="dob" type="date" /></label>
+    <label>Favorite genre<input id="genre" /></label>
+
+    <div>
+      <button id="create">Create account</button>
+    </div>
+
+    <div id="status" aria-live="polite" style="margin-top:10px"></div>
+    <pre id="debug"></pre>
+  </div>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('create');
+      const status = document.getElementById('status');
+      const debug = document.getElementById('debug');
+
+      async function sendSignup(){
+        status.textContent = '';
+        debug.textContent = '';
+        btn.disabled = true; btn.textContent = 'Creating...';
+
+        const payload = {
+          name: document.getElementById('name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value,
+          dateOfBirth: document.getElementById('dob').value || null,
+          favoriteGenre: document.getElementById('genre').value.trim() || null
+        };
+
+        const endpoint = (window.location && window.location.origin ? window.location.origin : 'http://localhost:8080') + '/api/customers';
+
+        try {
+          const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {'Content-Type':'application/json','Accept':'application/json'},
+            body: JSON.stringify(payload)
+          });
+
+          const text = await res.text();
+          let body = null;
+          try { body = JSON.parse(text); } catch(e) { body = text; }
+
+          debug.textContent = 'HTTP ' + res.status + '\n' + (typeof body === 'object' ? JSON.stringify(body, null, 2) : String(body));
+
+          if (!res.ok) {
+            status.textContent = 'Signup failed: ' + (body && (body.error||body.message) ? (body.error||body.message) : res.statusText);
+            return;
+          }
+
+          const id = body?.id || body?.user?.id || null;
+          if (id) localStorage.setItem('customerId', String(id));
+          localStorage.setItem('customerAuth', JSON.stringify(body));
+          status.textContent = 'Created id=' + (id || '(unknown)') + ' — redirecting to profile...';
+          window.location.href = 'userpro.html' + (id ? ('?id=' + encodeURIComponent(id)) : '');
+        } catch (err) {
+          debug.textContent = 'Network error: ' + (err && err.message ? err.message : String(err));
+        } finally {
+          btn.disabled = false; btn.textContent = 'Create account';
+        }
+      }
+
+      btn.addEventListener('click', sendSignup);
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Game — GamerBridge</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    body{background:#0d1117;color:#e5e7eb;font-family:Arial,Helvetica,sans-serif;margin:0}
+    .wrap{max-width:1000px;margin:28px auto;padding:20px}
+    .header{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+    .cover{width:300px;height:180px;border-radius:8px;overflow:hidden;flex:0 0 300px;background:#0b1220}
+    .cover img{width:100%;height:100%;object-fit:cover}
+    .meta{flex:1;min-width:220px}
+    .meta h1{margin:0 0 6px;color:#7fb1ff}
+    .muted{color:#9ca3af}
+    .card{background:#0f1724;padding:18px;border-radius:10px;margin-top:18px}
+    .btn{display:inline-block;padding:8px 12px;border-radius:8px;background:#2563eb;color:#fff;text-decoration:none;border:none;cursor:pointer}
+    .btn-danger{background:transparent;border:1px solid #ef4444;color:#ef4444}
+    .btn-cta{background:#10b981}
+    .actions{margin-top:12px;display:flex;gap:10px;align-items:center}
+    .review-form textarea{width:100%;min-height:80px;padding:8px;border-radius:6px;border:1px solid #1f2937;background:#071022;color:#e5e7eb}
+    .review-item{background:#071022;padding:10px;border-radius:6px;margin-bottom:8px}
+    .small-muted{color:#9ca3af;font-size:.9rem}
+    .rating-pill{background:#111827;color:#fff;padding:2px 8px;border-radius:999px;font-size:.85rem}
+    .subscribed { background:#6b7280;color:#fff;border-color:transparent; }
+  </style>
+</head>
+<body>
+  <main class="wrap" id="app">
+    <a href="gamelist.html" class="muted" style="text-decoration:none">← Back to games</a>
+
+    <div id="content">
+      <div class="muted" style="margin-top:18px">Loading game...</div>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const app = document.getElementById('content');
+
+      function qs(name){ return new URLSearchParams(location.search).get(name); }
+      function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+      function isLocallySubscribed(gameId){
+        try { const s = JSON.parse(localStorage.getItem('subscriptions')||'{}'); return !!s[gameId]; } catch(e){ return false; }
+      }
+      function setLocalSub(gameId, val){
+        try {
+          const s = JSON.parse(localStorage.getItem('subscriptions')||'{}');
+          if(val) s[gameId] = true; else delete s[gameId];
+          localStorage.setItem('subscriptions', JSON.stringify(s));
+        } catch(e){}
+      }
+
+      async function loadGame(id){
+        if(!id){ app.innerHTML = '<div class="muted">Missing game id in URL.</div>'; return; }
+        try {
+          const res = await fetch('/api/games/' + encodeURIComponent(id));
+          if (!res.ok) {
+            const txt = await res.text().catch(()=>res.statusText);
+            app.innerHTML = '<div class="muted">Failed to load game: ' + esc(txt) + '</div>';
+            return;
+          }
+          const g = await res.json();
+          render(g);
+        } catch (err) {
+          console.error(err);
+          const stored = JSON.parse(localStorage.getItem('games')||'[]');
+          const fallback = stored.find(x => String(x.id) === id || String(x.gameId) === id);
+          if (fallback) return render(fallback, true);
+          app.innerHTML = '<div class="muted">Network error while loading game.</div>';
+        }
+      }
+
+      function render(g, offline=false){
+        const id = g.id ?? g.gameId ?? '';
+        const title = esc(g.name || g.title || 'Untitled');
+        const img = esc(g.image || g.imageUrl || '/assets/img/placeholder.png');
+        const desc = esc(g.description || g.longDescription || '');
+        const genre = esc(g.genre || '');
+        const price = (g.price !== undefined && g.price !== null) ? ('$' + Number(g.price).toFixed(2)) : 'Free';
+        const devId = g.developer && (g.developer.id || g.developer) ? g.developer.id ?? g.developer : null;
+        const devName = g.developer && (g.developer.name || '') ? esc(g.developer.name) : (g.developer && typeof g.developer === 'string' ? esc(g.developer) : 'Unknown');
+        const subscribed = isLocallySubscribed(id);
+
+        app.innerHTML = `
+          <section class="header" aria-labelledby="game-title">
+            <div class="cover"><img src="${img}" alt="${title} cover"></div>
+            <div class="meta">
+              <h1 id="game-title">${title}</h1>
+              <div class="muted">
+                ${genre ? ('Genre: ' + genre) : ''}
+                ${genre && devName ? ' • ' : ''}
+                ${devName ? ('Developer: ' + (devId ? '<a href="devpro.html?id=' + encodeURIComponent(devId) + '" style="color:#cbd5e1;text-decoration:underline">' + devName + '</a>' : devName)) : ''}
+                ${g.releaseDate ? ' • Released: ' + esc(String(g.releaseDate).split('T')[0]) : ''}
+              </div>
+              <p class="muted" style="margin-top:8px">${desc}</p>
+
+              <div class="actions">
+                <a class="btn btn-cta" href="addgame.html">Add Game</a>
+                <a class="btn" id="editBtn" href="editgame.html?id=${encodeURIComponent(id)}">Edit</a>
+                <button class="btn ${subscribed ? 'subscribed' : ''}" id="subscribeBtn">${subscribed ? 'Subscribed' : 'Subscribe'}</button>
+                <button class="btn btn-danger" id="deleteBtn">Delete</button>
+                <a class="btn" href="gamelist.html" style="margin-left:auto">Back to list</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="card">
+            <h3>Details & Pricing</h3>
+            <p class="muted">Price: <span class="rating-pill">${esc(price)}</span></p>
+            <p class="muted">Status: ${esc(g.status || '—')}</p>
+          </section>
+
+          <section class="card" id="reviewsSection">
+            <h3>Reviews</h3>
+            <div id="reviews">Loading reviews…</div>
+
+            <!-- Inline review form -->
+            <div style="margin-top:12px" class="review-form">
+              <label class="small-muted" for="reviewText">Write a review</label>
+              <textarea id="reviewText" placeholder="Share your thoughts..."></textarea>
+
+              <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap">
+                <div>
+                  <label class="small-muted">Overall</label><br/>
+                  <select id="reviewRating" style="padding:6px;border-radius:6px;background:#071022;color:#e5e7eb;border:1px solid #1f2937">
+                    <option value="5">5 ★</option><option value="4">4 ★</option><option value="3">3 ★</option><option value="2">2 ★</option><option value="1">1 ★</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="small-muted">Gameplay</label><br/>
+                  <select id="gameplayRating" style="padding:6px;border-radius:6px;background:#071022;color:#e5e7eb;border:1px solid #1f2937">
+                    <option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="small-muted">Graphics</label><br/>
+                  <select id="graphicsRating" style="padding:6px;border-radius:6px;background:#071022;color:#e5e7eb;border:1px solid #1f2937">
+                    <option value="5">5</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option>
+                  </select>
+                </div>
+
+                <input id="reviewAuthor" placeholder="Your name (optional)" style="padding:6px;border-radius:6px;background:#071022;color:#e5e7eb;border:1px solid #1f2937" />
+                <button id="postReviewBtn" class="btn btn-cta">Post review</button>
+                <div id="revStatus" class="small-muted" style="margin-left:auto"></div>
+              </div>
+            </div>
+          </section>
+        `;
+
+        document.getElementById('subscribeBtn').addEventListener('click', ()=> toggleSubscribe(id));
+        document.getElementById('deleteBtn').addEventListener('click', ()=> onDelete(id));
+        document.getElementById('postReviewBtn').addEventListener('click', ()=> postReview(id));
+        loadReviews(id);
+      }
+
+      async function loadReviews(id){
+        const el = document.getElementById('reviews');
+        try {
+          const res = await fetch(`/api/games/${encodeURIComponent(id)}/reviews`);
+          if (!res.ok) { 
+            const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
+            el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">No reviews.</div>'; 
+            return;
+          }
+          const list = await res.json();
+          if (!Array.isArray(list) || list.length === 0) { 
+            const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
+            el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">No reviews yet.</div>';
+            return;
+          }
+          const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
+          const combined = [...list, ...local];
+          el.innerHTML = renderReviews(combined);
+        } catch(e){
+          console.warn(e);
+          const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
+          el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">Could not load reviews.</div>';
+        }
+      }
+
+      function renderReviews(list){
+        if(!Array.isArray(list) || list.length===0) return '<div class="muted">No reviews yet.</div>';
+        return list.map(r=>{
+          const author = esc(r.authorName || r.author || 'Anonymous');
+          const overall = esc(String(r.rating ?? r.overallRating ?? ''));
+          const gameplay = esc(String(r.gameplayRating ?? ''));
+          const graphics = esc(String(r.graphicsRating ?? ''));
+          const text = esc(r.text || r.content || r.reviewText || r.comment || '');
+          return `<article class="review-item"><strong>${author}</strong> <span class="small-muted" style="margin-left:8px">${overall ? overall + ' ★' : ''}</span>
+                    <div class="small-muted" style="margin-top:6px">Gameplay: ${gameplay || '—'} • Graphics: ${graphics || '—'}</div>
+                    <p style="margin-top:8px" class="small-muted">${text}</p></article>`;
+        }).join('');
+      }
+
+      async function postReview(id){
+        const status = document.getElementById('revStatus');
+        status.textContent = '';
+        const rawText = document.getElementById('reviewText').value.trim();
+        if(!rawText){ status.textContent = 'Please enter review text.'; return; }
+
+        const rating = parseInt(document.getElementById('reviewRating').value,10) || 5;
+        const gameplayRating = parseInt(document.getElementById('gameplayRating').value,10) || 5;
+        const graphicsRating = parseInt(document.getElementById('graphicsRating').value,10) || 5;
+        const author = document.getElementById('reviewAuthor').value.trim() || 'Anonymous';
+
+        status.textContent = 'Posting...';
+
+        const endpoints = [
+          `/api/games/${encodeURIComponent(id)}/reviews`,
+          `/api/games/${encodeURIComponent(id)}/review`,
+          `/api/reviews`,
+          `/api/reviews?gameId=${encodeURIComponent(id)}`
+        ];
+
+        const textKeys = ['text','content','reviewText','comment','body','message'];
+        const base = { rating, gameplayRating, graphicsRating, authorName: author, author, gameId: id, game: id };
+
+        let lastError = null;
+
+        for (const url of endpoints){
+          for (const key of textKeys){
+            const payload = Object.assign({}, base);
+            payload[key] = rawText;
+            try {
+              const res = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json','Accept':'application/json'},
+                body: JSON.stringify(payload)
+              });
+
+              if (res.ok) {
+                try { const saved = await res.json(); saveLocalReview(id, saved); } catch(e){}
+                status.textContent = 'Posted.';
+                document.getElementById('reviewText').value = '';
+                loadReviews(id);
+                setTimeout(()=> status.textContent = '', 1400);
+                return;
+              }
+
+              const txt = await res.text().catch(()=>res.statusText || '');
+              let message = txt;
+              try { const j = JSON.parse(txt); message = j.message || j.error || JSON.stringify(j); } catch(e){}
+
+              if (res.status >= 400 && res.status < 500) {
+                if (res.status === 404) {
+                  lastError = `404 at ${url} (tried key "${key}")`;
+                  continue;
+                }
+                status.textContent = 'Server rejected review: ' + (message || res.statusText);
+                return;
+              }
+
+              if (res.status >= 500) {
+                saveLocalReview(id, payload);
+                status.textContent = 'Saved locally (server error).';
+                loadReviews(id);
+                setTimeout(()=> status.textContent = '', 1800);
+                return;
+              }
+
+              lastError = `Status ${res.status} at ${url}: ${message}`;
+            } catch (err) {
+              lastError = String(err);
+              continue;
+            }
+          }
+        }
+
+        const networkLike = /Network|Failed to fetch|TypeError|fetch/i.test(String(lastError || ''));
+        if (networkLike) {
+          saveLocalReview(id, { text: rawText, rating, gameplayRating, graphicsRating, authorName: author, _savedAt: new Date().toISOString() });
+          status.textContent = 'Saved locally (offline).';
+          loadReviews(id);
+          setTimeout(()=> status.textContent = '', 1800);
+          return;
+        }
+
+        status.textContent = 'Failed to post review: ' + (lastError || 'unknown');
+      }
+
+      function saveLocalReview(id, review){
+        try {
+          const key = 'reviews_' + id;
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          const entry = Object.assign({}, review, { _savedAt: new Date().toISOString() });
+          arr.unshift(entry);
+          localStorage.setItem(key, JSON.stringify(arr.slice(0,50)));
+        } catch(e){ console.warn('saveLocalReview failed', e); }
+      }
+
+      async function toggleSubscribe(gameId){
+        if(!gameId) return;
+        const btn = document.getElementById('subscribeBtn');
+        const currently = isLocallySubscribed(gameId);
+        btn.disabled = true;
+        btn.textContent = currently ? 'Unsubscribing…' : 'Subscribing…';
+
+        const endpoints = [
+          `/api/games/${encodeURIComponent(gameId)}/subscribe`,
+          `/api/subscribe`,
+          `/subscribe`
+        ];
+
+        let success = false;
+        for(const url of endpoints){
+          try {
+            const opts = !currently
+              ? { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ gameId }) }
+              : { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ gameId }) };
+            const r = await fetch(url, opts);
+            if (r.ok) { success = true; break; }
+          } catch(e){ /* try next */ }
+        }
+
+        setLocalSub(gameId, !currently);
+        btn.textContent = !currently ? 'Subscribed' : 'Subscribe';
+        if(!currently) btn.classList.add('subscribed'); else btn.classList.remove('subscribed');
+        btn.disabled = false;
+
+        if(!success){
+          console.warn('Subscribe endpoint not reachable; saved locally.');
+        }
+      }
+
+      async function onDelete(id){
+        if(!confirm('Delete this game?')) return;
+        try {
+          const res = await fetch('/api/games/' + encodeURIComponent(id), { method: 'DELETE' });
+          if(!res.ok){
+            const txt = await res.text().catch(()=>res.statusText);
+            alert('Delete failed: ' + txt);
+            return;
+          }
+          location.href = 'gamelist.html';
+        } catch(e){
+          console.error(e); alert('Network error deleting game.');
+        }
+      }
+
+      loadGame(qs('id'));
+    })();
+  </script>
+</body>
+</html>

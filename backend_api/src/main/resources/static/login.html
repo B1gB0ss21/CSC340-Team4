@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Login</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0b0b0b;color:#eee}
+    .card{max-width:420px;margin:6vh auto;padding:20px;background:#111;border-radius:8px}
+    input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #222;background:#0f0f0f;color:#fff}
+    button{width:100%;padding:10px;border-radius:6px;border:none;background:#2b8cff;color:#fff;font-weight:700}
+    .msg{height:20px;color:#f88;margin:6px 0;font-size:0.95rem}
+    .links-row{display:flex;gap:8px;margin-top:12px}
+    .link-btn{flex:1;padding:8px;border-radius:6px;border:1px solid #26313a;background:transparent;color:#aee;font-weight:700;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="card" role="main" aria-labelledby="title">
+    <h2 id="title">Sign in</h2>
+    <div id="msg" class="msg" aria-live="polite"></div>
+
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="email" placeholder="you@domain.com">
+
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="password">
+
+    <button id="signin">Sign in</button>
+
+    <div class="links-row">
+      <button id="signupBtn" class="link-btn">Sign up</button>
+      <button id="devSignupBtn" class="link-btn">Dev Sign up</button>
+      <button id="devSigninBtn" class="link-btn">Dev Sign in</button>
+    </div>
+
+   
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const returnTo = params.get('returnTo') || 'gamelist.html';
+
+    async function checkSessionAndRedirect() {
+      try {
+        const r = await fetch('/api/me', { credentials: 'same-origin' });
+        if (r.ok) {
+          const data = await r.json().catch(()=>null);
+          if (data && data.id) {
+            location.href = returnTo;
+          }
+        }
+      } catch(e){
+
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', checkSessionAndRedirect);
+
+    const msgEl = document.getElementById('msg');
+    const signin = document.getElementById('signin');
+
+async function signIn() {
+  msgEl.textContent = '';
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if (!email || !password) { msgEl.textContent = 'Enter email and password.'; return; }
+  signin.disabled = true; signin.textContent = 'Signing in…';
+
+  try {
+    const res = await fetch('/api/customers/login', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    let payload = null;
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) payload = await res.json().catch(()=>null);
+    else payload = { message: await res.text().catch(()=>null) };
+
+    if (!res.ok || (payload && (payload.ok === false || payload.error))) {
+      const err = (payload && (payload.error || payload.message)) || ('Sign in failed (' + res.status + ')');
+      msgEl.textContent = err;
+      signin.disabled = false; signin.textContent = 'Sign in';
+      return;
+    }
+
+    const me = await fetch('/api/me', { credentials: 'same-origin' });
+    if (!me.ok) {
+      msgEl.textContent = 'Login succeeded but session not established. Check server Set-Cookie.';
+      signin.disabled = false; signin.textContent = 'Sign in';
+      console.debug('POST /api/customers/login response headers:', Array.from(res.headers.entries()));
+      return;
+    }
+    const meData = await me.json().catch(()=>null);
+    if (!meData || !meData.id) {
+      msgEl.textContent = 'Login succeeded but /api/me returned no id.';
+      signin.disabled = false; signin.textContent = 'Sign in';
+      console.debug('/api/me body:', meData);
+      return;
+    }
+    location.href = returnTo;
+  } catch (e) {
+    console.error('login error', e);
+    msgEl.textContent = 'Network error: could not reach server';
+    signin.disabled = false; signin.textContent = 'Sign in';
+  }
+}
+
+    signin.addEventListener('click', (e) => { e.preventDefault(); signIn(); });
+    document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); signIn(); }});
+
+    document.getElementById('signupBtn').addEventListener('click', ()=> { location.href = 'usersignup.html?returnTo=' + encodeURIComponent(returnTo); });
+    document.getElementById('devSignupBtn').addEventListener('click', ()=> { location.href = 'dsignup.html?returnTo=' + encodeURIComponent(returnTo); });
+    document.getElementById('devSigninBtn').addEventListener('click', ()=> { location.href = 'dlogin.html?returnTo=' + encodeURIComponent(returnTo); });
+  </script>
+</body>
+</html>
