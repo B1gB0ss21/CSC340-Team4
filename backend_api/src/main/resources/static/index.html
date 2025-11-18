@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GamerBridge - Home</title>
+
+  <!-- use the same stylesheet as gamelist -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    /* small overrides so the hero matches the dark gamelist theme if the stylesheet is missing */
+    body { background: #0d1117; color: #e5e7eb; font-family: Arial, sans-serif; margin:0; }
+    .site-header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#071026; color:#fff; }
+    .logo { font-size:1.1rem; font-weight:700; }
+    .navbar a { color:#cbd5e1; margin-left:16px; text-decoration:none; font-weight:600; }
+    .hero { padding:48px 20px; text-align:center; max-width:1200px; margin:36px auto; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; box-shadow:0 6px 24px rgba(2,6,23,0.6); }
+    .hero h1 { color:#fff; font-size:36px; margin:0 0 12px; }
+    .hero p { color:#9ca3af; margin:0 0 18px; font-size:1.05rem; }
+    .cta { display:inline-block; background:#2563eb; color:#fff; padding:12px 18px; border-radius:8px; text-decoration:none; font-weight:700; }
+    .features { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; max-width:1200px; margin:28px auto; padding:0 20px; }
+    .card { background:#0f1724; border-radius:10px; padding:16px; color:#cbd5e1; box-shadow:0 4px 10px rgba(2,6,23,0.6); }
+    .card h3 { margin:0 0 8px; color:#fff; }
+    footer { text-align:center; color:#94a3b8; padding:20px 0; margin-top:32px; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="logo">🎮 GamerBridge</div>
+    <nav class="navbar">
+      <a href="index.html">Home</a>
+      <a href="gamelist.html">Games</a>
+      <a href="about.html">About</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" role="banner" aria-label="Welcome">
+      <h1>Welcome to GamerBridge</h1>
+      <p>Discover top games, read community reviews, and subscribe for updates — all in one place.</p>
+      <a class="cta" href="gamelist.html">Browse Games</a>
+    </section>
+
+    <section class="features" aria-label="Highlights">
+      <div class="card">
+        <h3>Featured Games</h3>
+        <p>Hand-picked titles and trending releases from our community.</p>
+        <a href="gamelist.html" style="color:#60a5fa; text-decoration:none; font-weight:700">Explore →</a>
+      </div>
+
+      <div class="card">
+        <h3>Latest Reviews</h3>
+        <p>Player impressions and ratings to help you choose your next adventure.</p>
+        <a href="gamelist.html" style="color:#60a5fa; text-decoration:none; font-weight:700">Read →</a>
+      </div>
+
+      <div class="card">
+        <h3>Developer Spotlights</h3>
+        <p>Follow studios and get notified when they release new content.</p>
+        <a href="gamelist.html" style="color:#60a5fa; text-decoration:none; font-weight:700">Follow →</a>
+      </div>
+    </section>
+
+    <footer>
+      <p>© 2025 GamerBridge — API available at /api</p>
+    </footer>
+  </main>
+</body>
+</html>

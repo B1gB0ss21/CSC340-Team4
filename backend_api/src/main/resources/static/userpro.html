@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Profile • GamerBridge</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body{background:#000;color:#e5e7eb}
+    .card{background:#111;border-radius:8px;padding:20px;margin:6vh auto;max-width:720px}
+    .label{font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="btn btn-link text-white mt-3" href="gamelist.html">← Back to games</a>
+    <div class="card text-white">
+      <h3 id="title">Customer Profile</h3>
+      <div id="info" class="mt-3">
+        <p><span class="label">ID:</span> <span id="id">—</span></p>
+        <p><span class="label">Email:</span> <span id="email">—</span></p>
+        <p><span class="label">Name:</span> <span id="fullname">—</span></p>
+        <p><span class="label">Date of birth:</span> <span id="dob">—</span></p>
+        <p><span class="label">Favorite genre:</span> <span id="genre">—</span></p>
+      </div>
+
+      <div id="subscriptions" class="mt-4">
+        <h5>Subscriptions</h5>
+        <div id="subsList">Loading…</div>
+      </div>
+
+      <div class="mt-3 d-flex gap-2">
+        <a id="editProfile" class="btn btn-outline-info" href="useredit.html">Edit profile</a>
+        <button id="logout" class="btn btn-danger">Log out</button>
+      </div>
+
+      <div id="msg" style="color:#f88;margin-top:8px"></div>
+    </div>
+  </div>
+
+ <script>
+    async function fetchSubscriptions(customerId) {
+      try {
+        const r = await fetch(`/api/customers/${encodeURIComponent(customerId)}/subscriptions`, { credentials: 'same-origin' });
+        if (!r.ok) {
+          console.debug('failed to load subscriptions', r.status);
+          return null;
+        }
+        return await r.json();
+      } catch (e) {
+        console.error('subscriptions fetch error', e);
+        return null;
+      }
+    }
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function renderSubscriptions(list) {
+      const el = document.getElementById('subsList');
+      if (!list || list.length === 0) {
+        el.innerHTML = '<div class="text-muted">No subscriptions</div>';
+        return;
+      }
+      const items = list.map(s => {
+        const title = s.game_name || ('Game #' + (s.game_id || 'N/A'));
+        const type = s.type || '';
+        const plan = s.plan_name || '';
+        const active = (s.active === true || String(s.active) === 't') ? 'Active' : 'Inactive';
+        const start = s.start_date ? (s.start_date.split && s.start_date.split('T')[0] || s.start_date) : '';
+        const end = s.end_date ? (s.end_date.split && s.end_date.split('T')[0] || s.end_date) : '';
+        const created = s.created_at ? new Date(s.created_at).toLocaleString() : '';
+        return `<div class="mb-2">
+          <div><strong>${escapeHtml(title)}</strong> ${plan ? '• ' + escapeHtml(plan) : ''}</div>
+          <div class="text-muted">${escapeHtml(type)} • ${escapeHtml(active)} ${start ? ' • start: '+escapeHtml(start) : ''} ${end ? ' • end: '+escapeHtml(end) : ''} ${created ? ' • added: '+escapeHtml(created) : ''}</div>
+        </div>`;
+      }).join('');
+      el.innerHTML = items;
+    }
+
+    async function loadProfile(){
+      try {
+        const res = await fetch('/api/me', { credentials: 'same-origin' });
+        if (!res.ok) { location.href = 'login.html?returnTo=userpro.html'; return; }
+        const data = await res.json().catch(()=>null);
+        console.debug('/api/me payload:', data);
+        if (!data || !data.id) {
+          location.href = 'login.html?returnTo=userpro.html';
+          return;
+        }
+
+        const id = data.id;
+        document.getElementById('id').textContent = id;
+        document.getElementById('email').textContent = data.email || '—';
+        document.getElementById('fullname').textContent = data.name || '—';
+        document.getElementById('dob').textContent = data.dateOfBirth || '—';
+        document.getElementById('genre').textContent = data.favoriteGenre || data.genre || '—';
+
+        const subs = await fetchSubscriptions(id);
+        renderSubscriptions(subs);
+      } catch (e) {
+        console.error('loadProfile error', e);
+        document.getElementById('msg').textContent = 'Could not load profile.';
+        document.getElementById('subsList').textContent = '';
+      }
+    }
+
+    async function doLogout(){
+      try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch(e){}
+      try { localStorage.removeItem('customerAuth'); localStorage.removeItem('customerId'); } catch(e){}
+      location.href = 'login.html';
+    }
+
+    window.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('logout').addEventListener('click', doLogout);
+      loadProfile();
+    });
+  </script>
+</body>
+</html>

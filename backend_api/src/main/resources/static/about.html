@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - GamerBridge</title>
+
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    body { background: #0d1117; color: #e5e7eb; font-family: Arial, sans-serif; margin:0; }
+    .site-header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#071026; color:#fff; }
+    .logo { font-size:1.1rem; font-weight:700; }
+    .navbar a { color:#cbd5e1; margin-left:16px; text-decoration:none; font-weight:600; }
+    .container { max-width:1100px; margin:24px auto; padding:0 20px; }
+    .hero { padding:36px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:10px; }
+    h1 { margin:0 0 10px; color:#fff; }
+    p.lead { color:#9ca3af; font-size:1.05rem; margin:0 0 18px; }
+    .section { margin-top:18px; background:#0f1724; padding:18px; border-radius:8px; color:#cbd5e1; }
+    footer { text-align:center; color:#94a3b8; padding:20px 0; margin-top:28px; }
+
+    /* developer buttons */
+    .dev-actions { margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    .btn { display:inline-block; padding:10px 14px; border-radius:8px; text-decoration:none; font-weight:700; color:#fff; }
+    .btn-primary { background:#2563eb; }
+    .btn-outline { background:transparent; border:2px solid rgba(255,255,255,0.06); color:#cbd5e1; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="logo">🎮 GamerBridge</div>
+    <nav class="navbar">
+      <a href="index.html">Home</a>
+      <a href="gamelist.html">Games</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="hero" role="banner" aria-label="About GamerBridge">
+      <h1>About GamerBridge</h1>
+      <p class="lead">GamerBridge is a community-driven site for discovering and reviewing games from indie and established developers. We bring players and creators together in a close-knit, welcoming community where you can explore new titles, share honest reviews, and follow your favorite studios.</p>
+    </section>
+
+    <section class="section" aria-label="What we do">
+      <h2>What we do</h2>
+      <ul>
+        <li>Curate a catalog of games across genres and platforms.</li>
+        <li>Host community reviews and ratings to help players choose great games.</li>
+        <li>Support developers by showcasing releases and fostering feedback.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-label="Join us" style="margin-top:12px;">
+      <h2>Join the community</h2>
+      <p>Whether you're a player who loves discovering new experiences or a developer sharing your work, GamerBridge welcomes you. Create an account, write reviews, and connect with fellow gamers.</p>
+
+      <div class="dev-actions" aria-label="Developer actions">
+        <a href="dsignup.html" class="btn btn-primary" role="button">Developer Sign Up</a>
+        <a href="dlogin.html" class="btn btn-outline" role="button">Developer Login</a>
+      </div>
+
+      <p style="margin-top:12px"><a href="gamelist.html" style="color:#60a5fa; text-decoration:none; font-weight:700">Browse games →</a></p>
+    </section>
+
+    <footer>
+      <p>© 2025 GamerBridge — API available at /api</p>
+    </footer>
+  </main>
+</body>
+</html>

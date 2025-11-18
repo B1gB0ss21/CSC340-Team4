@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Edit Game - GamerBridge</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    body{background:#0d1117;color:#e5e7eb;font-family:Arial,Helvetica,sans-serif;margin:0}
+    .wrap{max-width:760px;margin:40px auto;padding:20px}
+    .card{background:#0f1724;padding:20px;border-radius:10px}
+    label{display:block;margin-top:10px;color:#cbd5e1}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #1f2937;background:#071022;color:#e5e7eb;margin-top:6px}
+    .row{display:flex;gap:10px;margin-top:14px}
+    .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
+    .btn-save{background:#10b981;color:#fff}
+    .btn-cancel{background:#2563eb;color:#fff}
+    .btn-delete{background:transparent;border:1px solid #ef4444;color:#ef4444;padding:10px;border-radius:8px}
+    .muted{color:#9ca3af;margin-top:8px}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <a href="gamelist.html" class="muted" style="text-decoration:none">← Back</a>
+      <h2 id="titleHeading">Edit Game</h2>
+
+      <form id="editForm" onsubmit="return false;">
+        <label for="name">Game name</label>
+        <input id="name" required />
+
+        <label for="genre">Genre</label>
+        <input id="genre" />
+
+        <label for="releaseDate">Release date</label>
+        <input id="releaseDate" type="date" />
+
+        <label for="image">Image URL</label>
+        <input id="image" />
+
+        <label for="description">Description</label>
+        <textarea id="description" rows="6"></textarea>
+
+        <label for="status">Status</label>
+        <select id="status">
+          <option>Released</option>
+          <option>Early Access</option>
+          <option>Alpha</option>
+          <option>Beta</option>
+          <option>Cancelled</option>
+        </select>
+
+        <label for="price">Price</label>
+        <input id="price" type="number" step="0.01" min="0" />
+
+        <div class="row">
+          <button id="saveBtn" class="btn btn-save">Save</button>
+          <button id="cancelBtn" class="btn btn-cancel" type="button">Cancel</button>
+          <button id="deleteBtn" class="btn-delete" type="button" style="margin-left:auto">Delete</button>
+        </div>
+        <div id="statusMsg" class="muted" aria-live="polite"></div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    (function(){
+      const qs = new URLSearchParams(location.search);
+      const id = qs.get('id');
+      const statusMsg = document.getElementById('statusMsg');
+      const saveBtn = document.getElementById('saveBtn');
+      const deleteBtn = document.getElementById('deleteBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+
+      function setLoading(loading){
+        saveBtn.disabled = loading;
+        deleteBtn.disabled = loading;
+        saveBtn.textContent = loading ? 'Saving...' : 'Save';
+      }
+
+      async function fetchGame(){
+        if(!id){ statusMsg.textContent = 'Missing game id.'; return; }
+        try {
+          const res = await fetch('/api/games/' + encodeURIComponent(id));
+          if(!res.ok) throw new Error('Failed to load game: ' + res.status);
+          const g = await res.json();
+          document.getElementById('name').value = g.name || g.title || '';
+          document.getElementById('genre').value = g.genre || '';
+          document.getElementById('releaseDate').value = g.releaseDate ? g.releaseDate.split('T')[0] : '';
+          document.getElementById('image').value = g.image || '';
+          document.getElementById('description').value = g.description || '';
+          document.getElementById('status').value = g.status || 'Released';
+          document.getElementById('price').value = (g.price != null) ? Number(g.price) : 0;
+          document.getElementById('titleHeading').textContent = 'Edit: ' + (g.name || g.title || 'Untitled');
+        } catch(err){
+          console.error(err);
+          statusMsg.textContent = 'Could not load game.';
+        }
+      }
+
+      saveBtn.addEventListener('click', async ()=>{
+        statusMsg.textContent = '';
+        setLoading(true);
+        const payload = {
+          name: document.getElementById('name').value.trim() || 'Untitled',
+          genre: document.getElementById('genre').value.trim() || null,
+          releaseDate: document.getElementById('releaseDate').value || null,
+          image: document.getElementById('image').value.trim() || null,
+          description: document.getElementById('description').value.trim() || null,
+          status: document.getElementById('status').value || 'Released',
+          price: Number(document.getElementById('price').value || 0)
+        };
+        try {
+          const res = await fetch('/api/games/' + encodeURIComponent(id), {
+            method: 'PUT',
+            headers: {'Content-Type':'application/json','Accept':'application/json'},
+            body: JSON.stringify(payload)
+          });
+          if(!res.ok){
+            const txt = await res.text().catch(()=>res.statusText);
+            throw new Error(txt || res.status);
+          }
+          // success -> go back to gamelist
+          location.href = 'gamelist.html';
+        } catch(err){
+          console.error(err);
+          statusMsg.textContent = 'Save failed: ' + (err.message || err);
+          setLoading(false);
+        }
+      });
+
+      deleteBtn.addEventListener('click', async ()=>{
+        if(!confirm('Delete this game?')) return;
+        setLoading(true);
+        try {
+          const res = await fetch('/api/games/' + encodeURIComponent(id), { method: 'DELETE' });
+          if(!res.ok){
+            const txt = await res.text().catch(()=>res.statusText);
+            throw new Error(txt || res.status);
+          }
+          location.href = 'gamelist.html';
+        } catch(err){
+          console.error(err);
+          statusMsg.textContent = 'Delete failed: ' + (err.message || err);
+          setLoading(false);
+        }
+      });
+
+      cancelBtn.addEventListener('click', ()=> location.href = 'gamelist.html');
+
+      // init
+      fetchGame();
+    })();
+  </script>
+</body>
+</html>

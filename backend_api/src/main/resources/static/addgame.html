@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Add Game - GamerBridge</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    body{background:#0d1117;color:#e5e7eb;font-family:Arial,Helvetica,sans-serif;margin:0}
+    .container{max-width:760px;margin:40px auto;padding:20px}
+    .card{background:#0f1724;padding:22px;border-radius:10px}
+    label{display:block;color:#cbd5e1;margin-bottom:6px;font-weight:600}
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #1f2937;background:#071022;color:#e5e7eb;margin-bottom:12px}
+    .row{display:flex;gap:12px}
+    .row > *{flex:1}
+    .btn{display:inline-block;padding:10px 14px;border-radius:8px;background:#10b981;color:#fff;text-decoration:none;border:none;cursor:pointer}
+    .btn-secondary{background:#2563eb}
+    .muted{color:#9ca3af;font-size:0.95rem}
+    .help{font-size:0.9rem;color:#94a3b8;margin-top:8px}
+    .small{font-size:0.85rem;color:#9ca3af}
+  </style>
+</head>
+<body>
+  <header style="padding:14px 20px;background:#071026;color:#fff">
+    <div style="max-width:1200px;margin:auto">🎮 GamerBridge — Add Game</div>
+  </header>
+
+  <main class="container">
+    <div class="card" role="form" aria-labelledby="addGameTitle">
+      <h2 id="addGameTitle">Add a new game</h2>
+      <p class="muted">Fill the form below and click Post. On success you'll be returned to the games list.</p>
+
+      <form id="addGameForm" onsubmit="return false;">
+        <label for="title">Title</label>
+        <input id="title" name="title" required placeholder="Game title" />
+
+        <label for="developer">Developer</label>
+        <select id="developer" name="developer">
+          <option value="">Loading developers…</option>
+        </select>
+        <div id="devHelp" class="small">If no developer is listed, create a developer account first.</div>
+
+        <label for="genre">Genre</label>
+        <input id="genre" name="genre" placeholder="Action, RPG, Strategy…" />
+
+        <label for="releaseDate">Release date</label>
+        <input id="releaseDate" name="releaseDate" type="date" />
+
+        <label for="image">Image URL</label>
+        <input id="image" name="image" placeholder="https://.../cover.jpg" />
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="6" placeholder="Short description"></textarea>
+
+        <label>Status</label>
+        <div class="row" style="margin-bottom:12px">
+          <select id="status" name="status">
+            <option value="Released">Released</option>
+            <option value="Early Access">Early Access</option>
+            <option value="Alpha">Alpha</option>
+            <option value="Beta">Beta</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <input id="price" name="price" placeholder="Price (optional)" />
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center">
+          <button id="postBtn" class="btn">Post game</button>
+          <a href="gamelist.html" class="btn btn-secondary" style="text-decoration:none">Cancel</a>
+          <div id="statusMsg" class="help" style="margin-left:auto"></div>
+        </div>
+      </form>
+    </div>
+  </main>
+
+
+<script>
+(async function(){
+  const postBtn = document.getElementById('postBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const devSelect = document.getElementById('developer');
+
+  async function loadDevelopers() {
+    try {
+      const devRes = await fetch('/api/developers');
+      if (devRes.ok) {
+        const devs = await devRes.json();
+        if (Array.isArray(devs) && devs.length) {
+          devSelect.innerHTML = '<option value="">-- Select developer --</option>';
+          devs.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.name || ('Developer #' + d.id);
+            devSelect.appendChild(opt);
+          });
+          return;
+        }
+      }
+    } catch (e) { console.warn('loadDevelopers error', e); }
+    devSelect.innerHTML = '<option value="">(No developers found — will create placeholder)</option>';
+  }
+
+  async function createPlaceholderDeveloper() {
+    const ts = Date.now();
+    const payload = {
+      name: 'Placeholder Dev ' + ts,
+      email: `placeholder+${ts}@example.local`,
+      password: 'TempPass!234',
+      bio: 'Auto-created placeholder developer for testing'
+    };
+    const res = await fetch('/api/developers', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','Accept':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(()=>res.statusText);
+      throw new Error('Create dev failed: ' + txt);
+    }
+    return (await res.json()).id;
+  }
+
+  await loadDevelopers();
+
+  postBtn.addEventListener('click', async () => {
+    statusMsg.textContent = '';
+    postBtn.disabled = true;
+    postBtn.textContent = 'Posting...';
+
+    let developerVal = document.getElementById('developer').value;
+    try {
+      if (!developerVal) {
+        statusMsg.textContent = 'No developer found — creating placeholder developer...';
+        const newDevId = await createPlaceholderDeveloper();
+        developerVal = newDevId;
+        devSelect.innerHTML = `<option value="${newDevId}">Placeholder Dev ${newDevId}</option>`;
+      }
+
+      const rawPrice = document.getElementById('price').value.trim();
+      const priceNum = rawPrice === '' ? 0 : Number(rawPrice);
+      const payload = {
+        
+        name: document.getElementById('title').value.trim() || 'Untitled',
+        developer: parseInt(developerVal, 10),
+        genre: document.getElementById('genre').value.trim() || null,
+        releaseDate: document.getElementById('releaseDate').value || null,
+        image: document.getElementById('image').value.trim() || null,
+        description: document.getElementById('description').value.trim() || null,
+        status: document.getElementById('status').value,
+        price: Number.isFinite(priceNum) ? priceNum : 0
+      };
+
+      if (!payload.name) {
+        alert('Please enter a game name.');
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post game';
+        statusMsg.textContent = '';
+        return;
+      }
+
+      console.log('POST payload:', payload);
+
+      const res = await fetch('/api/games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await res.text();
+      let body;
+      try { body = JSON.parse(text); } catch(e) { body = text; }
+
+      console.log('Response', res.status, body);
+
+      if (!res.ok) {
+        const msg = (body && (body.message || body.error || body.errors)) ? JSON.stringify(body) : (res.statusText || 'Bad Request');
+        statusMsg.textContent = 'Failed to add game: ' + msg;
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post game';
+        return;
+      }
+
+      window.location.href = 'gamelist.html';
+    } catch (err) {
+      console.error('Network/error', err);
+      statusMsg.textContent = 'Error: ' + (err.message || err);
+      postBtn.disabled = false;
+      postBtn.textContent = 'Post game';
+    }
+  });
+})();
+</script>
+<script>
+(async function(){
+  const postBtn = document.getElementById('postBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const devSelect = document.getElementById('developer');
+
+  async function loadDevelopers() {
+    try {
+      const devRes = await fetch('/api/developers');
+      if (devRes.ok) {
+        const devs = await devRes.json();
+        if (Array.isArray(devs) && devs.length) {
+          devSelect.innerHTML = '<option value="">-- Select developer --</option>';
+          devs.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = d.name || ('Developer #' + d.id);
+            devSelect.appendChild(opt);
+          });
+          return;
+        }
+      }
+    } catch (e) { console.warn('loadDevelopers error', e); }
+    devSelect.innerHTML = '<option value="">(No developers found — will create placeholder)</option>';
+  }
+
+  async function createPlaceholderDeveloper() {
+    const ts = Date.now();
+    const payload = {
+      name: 'Placeholder Dev ' + ts,
+      email: `placeholder+${ts}@example.local`,
+      password: 'TempPass!234',
+      bio: 'Auto-created placeholder developer for testing'
+    };
+    const res = await fetch('/api/developers', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','Accept':'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const txt = await res.text().catch(()=>res.statusText);
+      throw new Error('Create dev failed: ' + txt);
+    }
+    return (await res.json()).id;
+  }
+
+  await loadDevelopers();
+
+  postBtn.addEventListener('click', async () => {
+    statusMsg.textContent = '';
+    postBtn.disabled = true;
+    postBtn.textContent = 'Posting...';
+
+    let developerVal = document.getElementById('developer').value;
+    try {
+      if (!developerVal) {
+        statusMsg.textContent = 'No developer found — creating placeholder developer...';
+        const newDevId = await createPlaceholderDeveloper();
+        developerVal = newDevId;
+        devSelect.innerHTML = `<option value="${newDevId}">Placeholder Dev ${newDevId}</option>`;
+      }
+
+      const rawPrice = document.getElementById('price').value.trim();
+      const priceNum = rawPrice === '' ? 0 : Number(rawPrice);
+      const payload = {
+    
+        name: document.getElementById('title').value.trim() || 'Untitled',
+        developer: parseInt(developerVal, 10),
+        genre: document.getElementById('genre').value.trim() || null,
+        releaseDate: document.getElementById('releaseDate').value || null,
+        image: document.getElementById('image').value.trim() || null,
+        description: document.getElementById('description').value.trim() || null,
+        status: document.getElementById('status').value,
+        price: Number.isFinite(priceNum) ? priceNum : 0
+      };
+
+      if (!payload.name) {
+        alert('Please enter a game name.');
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post game';
+        statusMsg.textContent = '';
+        return;
+      }
+
+      console.log('POST payload:', payload);
+
+      const res = await fetch('/api/games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const text = await res.text();
+      let body;
+      try { body = JSON.parse(text); } catch(e) { body = text; }
+
+      console.log('Response', res.status, body);
+
+      if (!res.ok) {
+        const msg = (body && (body.message || body.error || body.errors)) ? JSON.stringify(body) : (res.statusText || 'Bad Request');
+        statusMsg.textContent = 'Failed to add game: ' + msg;
+        postBtn.disabled = false;
+        postBtn.textContent = 'Post game';
+        return;
+      }
+
+      window.location.href = 'gamelist.html';
+    } catch (err) {
+      console.error('Network/error', err);
+      statusMsg.textContent = 'Error: ' + (err.message || err);
+      postBtn.disabled = false;
+      postBtn.textContent = 'Post game';
+    }
+  });
+})();
+</script>
+</body>
+</html>

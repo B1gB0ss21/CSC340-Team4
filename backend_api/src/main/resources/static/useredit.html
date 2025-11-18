@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Edit Profile • GamerBridge</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta name="_csrf" content="${_csrf.token}">
+  <meta name="_csrf_header" content="${_csrf.headerName}">
+  <style>
+    body{background:#000;color:#e5e7eb}
+    .card{background:#111;border-radius:8px;padding:20px;margin:6vh auto;max-width:720px}
+    .label{font-weight:700}
+    input,select{background:#0f0f0f;border:1px solid #222;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a class="btn btn-link text-white mt-3" href="userpro.html">← Back to profile</a>
+    <div class="card text-white">
+      <h3>Edit Profile</h3>
+
+      <form id="editForm" class="mt-3" autocomplete="off">
+        <div class="mb-3">
+          <label class="form-label label" for="email">Email (read-only)</label>
+          <input id="email" class="form-control" type="email" disabled />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label label" for="name">Full name</label>
+          <input id="name" class="form-control" type="text" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label label" for="dob">Date of birth</label>
+          <input id="dob" class="form-control" type="date" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label label" for="genre">Favorite genre</label>
+          <input id="genre" class="form-control" type="text" placeholder="e.g. RPG" />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label label" for="password">New password (optional)</label>
+          <input id="password" class="form-control" type="password" autocomplete="new-password" />
+        </div>
+
+        <div class="d-flex gap-2">
+          <button id="saveBtn" class="btn btn-primary" type="submit">Save</button>
+          <a id="cancelBtn" class="btn btn-outline-secondary" href="userpro.html">Cancel</a>
+        </div>
+
+        <div id="msg" class="mt-3" style="color:#f88"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let currentId = null;
+
+     function getCsrfHeaders() {
+      const token = document.querySelector('meta[name="_csrf"]')?.content;
+      const rawHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+      const safeHeader = (/^[A-Za-z0-9-]+$/).test(String(rawHeader)) ? rawHeader : 'X-CSRF-TOKEN';
+      return token ? { [safeHeader]: token } : {};
+    }
+    async function loadProfile() {
+      try {
+        const r = await fetch('/api/me', { credentials: 'same-origin' });
+        if (!r.ok) { location.href = 'login.html?returnTo=useredit.html'; return; }
+        const data = await r.json();
+        if (!data || !data.id) { location.href = 'login.html?returnTo=useredit.html'; return; }
+
+        currentId = data.id;
+        document.getElementById('email').value = data.email || '';
+        document.getElementById('name').value = data.name || '';
+        // prefer ISO yyyy-MM-dd; if server returns other format, leave as-is
+        if (data.dateOfBirth) {
+          // attempt to convert to yyyy-MM-dd for input[type=date]
+          const d = new Date(data.dateOfBirth);
+          if (!isNaN(d)) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth()+1).padStart(2,'0');
+            const dd = String(d.getDate()).padStart(2,'0');
+            document.getElementById('dob').value = `${yyyy}-${mm}-${dd}`;
+          } else {
+            document.getElementById('dob').value = data.dateOfBirth;
+          }
+        }
+        document.getElementById('genre').value = data.favoriteGenre || data.genre || '';
+      } catch (e) {
+        console.error(e);
+        document.getElementById('msg').textContent = 'Could not load profile.';
+      }
+    }
+
+    document.getElementById('editForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      document.getElementById('msg').textContent = '';
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      const payload = {
+        name: document.getElementById('name').value.trim() || null,
+        dateOfBirth: document.getElementById('dob').value || null,
+        favoriteGenre: document.getElementById('genre').value.trim() || null,
+      };
+      const pw = document.getElementById('password').value;
+      if (pw) payload.password = pw;
+
+      try {
+        if (!currentId) throw new Error('missing user id');
+        const headers = Object.assign({ 'Content-Type': 'application/json' }, getCsrfHeaders());
+        const res = await fetch(`/api/customers/${encodeURIComponent(currentId)}`, {
+          method: 'PUT',
+          credentials: 'same-origin',
+          headers,
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const text = await res.text().catch(()=>null);
+          throw new Error(text || `HTTP ${res.status}`);
+        }
+
+        // success -> go back to profile
+        location.href = 'userpro.html';
+      } catch (err) {
+        console.error(err);
+        document.getElementById('msg').textContent = 'Save failed: ' + (err.message || 'unknown');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save';
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', loadProfile);
+  </script>
+</body>
+</html>
