@@ -1,4 +1,4 @@
-package com.backend_api;
+package com.backend_api.subscription;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;

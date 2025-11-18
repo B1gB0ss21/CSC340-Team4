@@ -1,4 +1,4 @@
-package com.backend_api;
+package com.backend_api.subscription;
 
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
