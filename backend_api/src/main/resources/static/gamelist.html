@@ -33,6 +33,7 @@
     <div class="row mb-3">
       <div class="col-12">
         <form id="searchForm" class="d-flex gap-2" autocomplete="off">
+          <input id="priceInput" class="form-control" type="number" step="0.01" min="0" name="price" placeholder="Max price" />
           <input id="searchInput" class="form-control" type="search" name="q" placeholder="Search by title..." />
           <button id="clearBtn" class="btn btn-outline-secondary" type="button">Clear</button>
           <button class="btn btn-primary" type="submit">Search</button>
@@ -219,7 +220,12 @@
 
       form.addEventListener('submit', (e)=>{
         e.preventDefault();
-        load(input.value.trim());
+        const name = input.value.trim();
+        const price = document.getElementById('priceInput').value.trim();
+        let query = '';
+        if (name) query += `q=${encodeURIComponent(name)}`;
+        if (price) query += (query ? '&' : '') + `price=${encodeURIComponent(price)}`;
+        load(query);
       });
 
       clear.addEventListener('click', ()=>{

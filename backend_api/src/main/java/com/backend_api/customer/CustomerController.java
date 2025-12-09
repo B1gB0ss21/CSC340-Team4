@@ -1,10 +1,11 @@
 package com.backend_api.customer;
-
+import com.backend_api.games.GamesRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.dao.DataIntegrityViolationException;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import com.backend_api.games.Games;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +16,9 @@ import jakarta.servlet.http.HttpSession;
 @RestController
 @RequestMapping("/api/customers")
 public class CustomerController {
-
+    @Autowired
+    private GamesRepository gamesRepository;
+    
     private final CustomerService customerService;
 
     public CustomerController(CustomerService customerService) {
@@ -75,6 +78,23 @@ public class CustomerController {
         }
     }
 
+    @GetMapping("/api/games")
+    public ResponseEntity<?> searchGames(
+        @RequestParam(value = "q", required = false) String q,
+        @RequestParam(value = "price", required = false) Double price
+    ) {
+        List<Games> result;
+        if (q != null && !q.isEmpty() && price != null) {
+            result = gamesRepository.findByNameContainingIgnoreCaseAndPriceLessThanEqual(q, price);
+        } else if (q != null && !q.isEmpty()) {
+            result = gamesRepository.findByNameContainingIgnoreCase(q);
+        } else if (price != null) {
+            result = gamesRepository.findByPriceLessThanEqual(price);
+        } else {
+            result = gamesRepository.findAll();
+        }
+        return ResponseEntity.ok(result);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {

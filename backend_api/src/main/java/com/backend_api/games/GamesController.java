@@ -1,5 +1,6 @@
 package com.backend_api.games;
-
+import com.backend_api.games.GamesRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GamesController {
     private final GamesService gamesService;
-
+    private final GamesRepository gamesRepository;
+    
     @PostMapping
     public ResponseEntity<Games> createGames(@Valid @RequestBody Games games) {
         Games created = gamesService.createGames(games);
@@ -43,7 +45,20 @@ public class GamesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Games>> getAvailableGames() {
-        return ResponseEntity.ok(gamesService.getAvailableGames());
+    public ResponseEntity<List<Games>> searchGames(
+        @RequestParam(value = "q", required = false) String q,
+        @RequestParam(value = "price", required = false) Double price
+    ) {
+        List<Games> result;
+        if (q != null && !q.isEmpty() && price != null) {
+            result = gamesRepository.findByNameContainingIgnoreCaseAndPriceLessThanEqual(q, price);
+        } else if (q != null && !q.isEmpty()) {
+            result = gamesRepository.findByNameContainingIgnoreCase(q);
+        } else if (price != null) {
+            result = gamesRepository.findByPriceLessThanEqual(price);
+        } else {
+            result = gamesService.getAvailableGames();
+        }
+        return ResponseEntity.ok(result);
     }
 }
