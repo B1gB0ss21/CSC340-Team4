@@ -76,7 +76,7 @@
       function render(g, offline=false){
         const id = g.id ?? g.gameId ?? '';
         const title = esc(g.name || g.title || 'Untitled');
-        const img = esc(g.image || g.imageUrl || '/assets/img/placeholder.png');
+        const img = esc(g.image || g.imageUrl || `/images/games/cover-${id}.jpg` || '/images/placeholder.png');
         const desc = esc(g.description || g.longDescription || '');
         const genre = esc(g.genre || '');
         const price = (g.price !== undefined && g.price !== null) ? ('$' + Number(g.price).toFixed(2)) : 'Free';
@@ -86,7 +86,7 @@
 
         app.innerHTML = `
           <section class="header" aria-labelledby="game-title">
-            <div class="cover"><img src="${img}" alt="${title} cover"></div>
+            <div class="cover"><img src="${img}" alt="${title} cover" onerror="this.onerror=null;this.src='/images/placeholder.png'"></div>
             <div class="meta">
               <h1 id="game-title">${title}</h1>
               <div class="muted">
@@ -161,127 +161,110 @@
       async function loadReviews(id){
         const el = document.getElementById('reviews');
         try {
-          const res = await fetch(`/api/games/${encodeURIComponent(id)}/reviews`);
-          if (!res.ok) { 
-            const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
-            el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">No reviews.</div>'; 
-            return;
-          }
+          const res = await fetch(`/api/games/${encodeURIComponent(id)}/reviews`, {
+            credentials: "include"
+          });
+          if (!res.ok) throw new Error('Server returned ' + res.status);
           const list = await res.json();
-          if (!Array.isArray(list) || list.length === 0) { 
-            const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
-            el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">No reviews yet.</div>';
-            return;
-          }
-          const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
-          const combined = [...list, ...local];
-          el.innerHTML = renderReviews(combined);
+          el.innerHTML = renderReviews(list); // <-- Only backend reviews
+          return;
         } catch(e){
-          console.warn(e);
           const local = JSON.parse(localStorage.getItem('reviews_' + id) || '[]');
-          el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">Could not load reviews.</div>';
+          el.innerHTML = local.length ? renderReviews(local) : '<div class="muted">No reviews.</div>';
         }
       }
 
       function renderReviews(list){
         if(!Array.isArray(list) || list.length===0) return '<div class="muted">No reviews yet.</div>';
         return list.map(r=>{
-          const author = esc(r.authorName || r.author || 'Anonymous');
+          const author = esc(r.customer && r.customer.name ? r.customer.name : "Anonymous");
           const overall = esc(String(r.rating ?? r.overallRating ?? ''));
-          const gameplay = esc(String(r.gameplayRating ?? ''));
-          const graphics = esc(String(r.graphicsRating ?? ''));
-          const text = esc(r.text || r.content || r.reviewText || r.comment || '');
-          return `<article class="review-item"><strong>${author}</strong> <span class="small-muted" style="margin-left:8px">${overall ? overall + ' ★' : ''}</span>
+          const gameplay = esc(String(r.gameplayRating ?? r.gameplayRating ?? ''));
+          const graphics = esc(String(r.graphicsRating ?? r.graphicsRating ?? ''));
+          const text = esc(r.content || r.text || r.reviewText || r.comment || '');
+          const idAttr = r.id ? `data-id="${r.id}"` : '';
+          const deleteBtn = r.id ? `<button class="btn btn-danger" style="margin-left:8px" onclick="deleteReview(${Number(r.id)})">Delete</button>` : '';
+          return `<article class="review-item" ${idAttr}><strong>${author}</strong> <span class="small-muted" style="margin-left:8px">${overall ? overall + ' ★' : ''}</span>
                     <div class="small-muted" style="margin-top:6px">Gameplay: ${gameplay || '—'} • Graphics: ${graphics || '—'}</div>
-                    <p style="margin-top:8px" class="small-muted">${text}</p></article>`;
+                    <p style="margin-top:8px" class="small-muted">${text}</p>
+                    ${deleteBtn}
+                  </article>`;
         }).join('');
       }
 
-      async function postReview(id){
-        const status = document.getElementById('revStatus');
-        status.textContent = '';
-        const rawText = document.getElementById('reviewText').value.trim();
-        if(!rawText){ status.textContent = 'Please enter review text.'; return; }
-
-        const rating = parseInt(document.getElementById('reviewRating').value,10) || 5;
-        const gameplayRating = parseInt(document.getElementById('gameplayRating').value,10) || 5;
-        const graphicsRating = parseInt(document.getElementById('graphicsRating').value,10) || 5;
-        const author = document.getElementById('reviewAuthor').value.trim() || 'Anonymous';
-
-        status.textContent = 'Posting...';
-
-        const endpoints = [
-          `/api/games/${encodeURIComponent(id)}/reviews`,
-          `/api/games/${encodeURIComponent(id)}/review`,
-          `/api/reviews`,
-          `/api/reviews?gameId=${encodeURIComponent(id)}`
-        ];
-
-        const textKeys = ['text','content','reviewText','comment','body','message'];
-        const base = { rating, gameplayRating, graphicsRating, authorName: author, author, gameId: id, game: id };
-
-        let lastError = null;
-
-        for (const url of endpoints){
-          for (const key of textKeys){
-            const payload = Object.assign({}, base);
-            payload[key] = rawText;
+      window.deleteReview = async function(reviewId){
+        if(!confirm('Delete this review?')) return;
+        const gameId = new URLSearchParams(location.search).get('id');
+        try {
+          const res = await fetch('/api/reviews/' + encodeURIComponent(reviewId), { method: 'DELETE' });
+          if (res.ok) {
             try {
-              const res = await fetch(url, {
-                method: 'POST',
-                headers: {'Content-Type':'application/json','Accept':'application/json'},
-                body: JSON.stringify(payload)
-              });
-
-              if (res.ok) {
-                try { const saved = await res.json(); saveLocalReview(id, saved); } catch(e){}
-                status.textContent = 'Posted.';
-                document.getElementById('reviewText').value = '';
-                loadReviews(id);
-                setTimeout(()=> status.textContent = '', 1400);
-                return;
-              }
-
-              const txt = await res.text().catch(()=>res.statusText || '');
-              let message = txt;
-              try { const j = JSON.parse(txt); message = j.message || j.error || JSON.stringify(j); } catch(e){}
-
-              if (res.status >= 400 && res.status < 500) {
-                if (res.status === 404) {
-                  lastError = `404 at ${url} (tried key "${key}")`;
-                  continue;
-                }
-                status.textContent = 'Server rejected review: ' + (message || res.statusText);
-                return;
-              }
-
-              if (res.status >= 500) {
-                saveLocalReview(id, payload);
-                status.textContent = 'Saved locally (server error).';
-                loadReviews(id);
-                setTimeout(()=> status.textContent = '', 1800);
-                return;
-              }
-
-              lastError = `Status ${res.status} at ${url}: ${message}`;
-            } catch (err) {
-              lastError = String(err);
-              continue;
-            }
+              const key = 'reviews_' + gameId;
+              const arr = JSON.parse(localStorage.getItem(key) || '[]');
+              const updated = arr.filter(x => String(x.id || x._savedAt) !== String(reviewId));
+              localStorage.setItem(key, JSON.stringify(updated));
+            } catch(e){}
+            loadReviews(gameId);
+          } else {
+            const txt = await res.text().catch(()=>res.statusText);
+            alert('Delete failed: ' + txt);
           }
+        } catch(err){
+          console.error(err);
+          alert('Network error deleting review.');
         }
+      };
 
-        const networkLike = /Network|Failed to fetch|TypeError|fetch/i.test(String(lastError || ''));
-        if (networkLike) {
-          saveLocalReview(id, { text: rawText, rating, gameplayRating, graphicsRating, authorName: author, _savedAt: new Date().toISOString() });
-          status.textContent = 'Saved locally (offline).';
-          loadReviews(id);
-          setTimeout(()=> status.textContent = '', 1800);
-          return;
-        }
+async function postReview(id){
+  const status = document.getElementById('revStatus');
+  status.textContent = '';
+  const rawText = document.getElementById('reviewText').value.trim();
+  if(!rawText){ status.textContent = 'Please enter review text.'; return; }
 
-        status.textContent = 'Failed to post review: ' + (lastError || 'unknown');
-      }
+  const rating = parseInt(document.getElementById('reviewRating').value,10) || 5;
+  const gameplayRating = parseInt(document.getElementById('gameplayRating').value,10) || 5;
+  const graphicsRating = parseInt(document.getElementById('graphicsRating').value,10) || 5;
+
+  status.textContent = 'Posting...';
+
+  const payload = {
+    rating,
+    gameplayRating,
+    graphicsRating,
+    comment: rawText
+  };
+
+  try {
+    const res = await fetch(`/api/games/${encodeURIComponent(id)}/reviews`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(payload),
+      credentials: "include"
+    });
+
+    if (res.ok) {
+      try { const saved = await res.json(); saveLocalReview(id, saved); } catch(e){}
+      status.textContent = 'Posted.';
+      document.getElementById('reviewText').value = '';
+      loadReviews(id);
+      setTimeout(()=> status.textContent = '', 1400);
+      return;
+    }
+
+    const txt = await res.text().catch(()=>res.statusText || '');
+    let message = txt;
+    try { const j = JSON.parse(txt); message = j.message || j.error || JSON.stringify(j); } catch(e){}
+
+    if (res.status === 401 || res.status === 403) {
+      status.textContent = 'You must be logged in to post a review.';
+      return;
+    }
+
+    status.textContent = 'Failed to post review: ' + (message || res.statusText);
+  } catch (err) {
+    status.textContent = 'Network error: could not post review.';
+  }
+}
 
       function saveLocalReview(id, review){
         try {
@@ -301,9 +284,10 @@
         btn.textContent = currently ? 'Unsubscribing…' : 'Subscribing…';
 
         const endpoints = [
-          `/api/games/${encodeURIComponent(gameId)}/subscribe`,
-          `/api/subscribe`,
-          `/subscribe`
+            `/api/games/${encodeURIComponent(id)}/reviews`,
+            `/api/games/${encodeURIComponent(id)}/review`,
+            `/api/reviews`,
+            `/api/reviews?gameId=${encodeURIComponent(id)}`
         ];
 
         let success = false;
@@ -312,9 +296,9 @@
             const opts = !currently
               ? { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ gameId }) }
               : { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ gameId }) };
-            const r = await fetch(url, opts);
+            const r = await fetch(url, opts, credentials="include");
             if (r.ok) { success = true; break; }
-          } catch(e){ /* try next */ }
+          } catch(e){ }
         }
 
         setLocalSub(gameId, !currently);
@@ -330,7 +314,10 @@
       async function onDelete(id){
         if(!confirm('Delete this game?')) return;
         try {
-          const res = await fetch('/api/games/' + encodeURIComponent(id), { method: 'DELETE' });
+          const res = await fetch(`/api/games/${encodeURIComponent(id)}/reviews`, {
+            credentials: "include"
+          });
+
           if(!res.ok){
             const txt = await res.text().catch(()=>res.statusText);
             alert('Delete failed: ' + txt);

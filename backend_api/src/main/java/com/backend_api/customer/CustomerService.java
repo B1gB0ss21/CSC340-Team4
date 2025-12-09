@@ -3,8 +3,6 @@ package com.backend_api.customer;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +12,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class CustomerService {
 
-    private static final Logger log = LoggerFactory.getLogger(CustomerService.class);
-
     private final CustomerRepository customerRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -24,7 +20,6 @@ public class CustomerService {
     }
 
     public Customer createCustomer(Customer customer) {
-        log.info("createCustomer called for email={}", customer.getEmail());
         if (customer.getEmail() == null) throw new IllegalArgumentException("email required");
         if (customerRepository.existsByEmail(customer.getEmail())) {
             throw new IllegalStateException("email already registered");
@@ -33,7 +28,6 @@ public class CustomerService {
             customer.setPassword(encoder.encode(customer.getPassword()));
         }
         Customer saved = customerRepository.save(customer);
-        log.info("customerRepository.save returned id={}", saved.getId());
         return saved;
     }
 
@@ -42,7 +36,6 @@ public class CustomerService {
         Optional<Customer> opt = customerRepository.findByEmail(email);
         if (opt.isEmpty()) return null;
         Customer c = opt.get();
-        // password in DB is hashed; verify
         if (c.getPassword() == null) return null;
         boolean ok = encoder.matches(rawPassword, c.getPassword());
         return ok ? c : null;
@@ -74,6 +67,10 @@ public class CustomerService {
 
     public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
+    }
+
+    public Customer getCustomerByUsername(String username) {
+    return customerRepository.findByEmail(username).orElse(null); 
     }
 
     public List<Customer> searchByDob(String dob) {

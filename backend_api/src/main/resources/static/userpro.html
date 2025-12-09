@@ -41,7 +41,7 @@
  <script>
     async function fetchSubscriptions(customerId) {
       try {
-        const r = await fetch(`/api/customers/${encodeURIComponent(customerId)}/subscriptions`, { credentials: 'same-origin' });
+        const r = await fetch(`/api/customers/${encodeURIComponent(customerId)}/subscriptions`, { credentials: 'include' });
         if (!r.ok) {
           console.debug('failed to load subscriptions', r.status);
           return null;
@@ -53,7 +53,11 @@
       }
     }
 
-    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeHtml(s){ 
+  return String(s||'').replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  )); 
+}
 
     function renderSubscriptions(list) {
       const el = document.getElementById('subsList');
@@ -79,7 +83,7 @@
 
     async function loadProfile(){
       try {
-        const res = await fetch('/api/me', { credentials: 'same-origin' });
+        const res = await fetch('/api/me', { credentials: 'include' }); // <-- FIXED typo here
         if (!res.ok) { location.href = 'login.html?returnTo=userpro.html'; return; }
         const data = await res.json().catch(()=>null);
         console.debug('/api/me payload:', data);
@@ -96,7 +100,16 @@
         document.getElementById('genre').textContent = data.favoriteGenre || data.genre || '—';
 
         const subs = await fetchSubscriptions(id);
-        renderSubscriptions(subs);
+        if (subs && subs.length > 0) {
+          renderSubscriptions(subs);
+          document.getElementById('msg').textContent = '';
+        } else if (subs && subs.length === 0) {
+          document.getElementById('subsList').textContent = 'No subscriptions found.';
+          document.getElementById('msg').textContent = '';
+        } else {
+          document.getElementById('subsList').textContent = '';
+          document.getElementById('msg').textContent = 'Could not load subscriptions.';
+        }
       } catch (e) {
         console.error('loadProfile error', e);
         document.getElementById('msg').textContent = 'Could not load profile.';
@@ -104,12 +117,11 @@
       }
     }
 
-    async function doLogout(){
-      try { await fetch('/api/logout', { method: 'POST', credentials: 'same-origin' }); } catch(e){}
-      try { localStorage.removeItem('customerAuth'); localStorage.removeItem('customerId'); } catch(e){}
-      location.href = 'login.html';
-    }
-
+   async function doLogout(){
+  try { await fetch('/api/logout', { method: 'POST', credentials: 'include' }); } catch(e){}
+  try { localStorage.removeItem('customerAuth'); localStorage.removeItem('customerId'); } catch(e){}
+  location.replace('login.html');
+  }
     window.addEventListener('DOMContentLoaded', ()=>{
       document.getElementById('logout').addEventListener('click', doLogout);
       loadProfile();

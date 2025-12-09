@@ -14,7 +14,7 @@ import com.backend_api.developer.Developer;
 
 @Entity
 @Table(name = "games")
-@JsonIgnoreProperties({"reviews","subscriptions"})
+@JsonIgnoreProperties({"hibernateLazyInitializer","handler","reviews","subscriptions"})
 public class Games {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +26,25 @@ public class Games {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    @ElementCollection
+    @CollectionTable(name = "game_images", joinColumns = @JoinColumn(name = "game_id"))
+    @Column(name = "image_url")
+    private List<String> images = new ArrayList<>();
+
+    public List<String> getImages() { return images; }
+    public String getImage() { return images.isEmpty() ? null : images.get(0); }
+    public void setImages(List<String> images) { this.images = images; }
+    
+    public void setImage(String imageUrl) {
+        if(imageUrl == null) {
+            this.images.clear();
+        } else if(this.images.isEmpty()) {
+            this.images.add(imageUrl);
+        } else {
+            this.images.set(0, imageUrl);
+        }
+    }
 
     @NotNull
     @Positive

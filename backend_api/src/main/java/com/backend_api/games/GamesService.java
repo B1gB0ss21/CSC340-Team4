@@ -22,7 +22,6 @@ public class GamesService {
     public Games updateGames(Long id, Games gameDetails) {
         Optional<Games> opt = gamesRepository.findById(id);
         if (opt.isEmpty()) return null;
-
         Games game = opt.get();
         game.setName(gameDetails.getName());
         game.setDescription(gameDetails.getDescription());
@@ -32,7 +31,14 @@ public class GamesService {
         return gamesRepository.save(game);
     }
 
-    // return boolean to indicate success (controller checks this)
+   public Games updateImage(Long id, String imageUrl) {
+       Optional<Games> opt = gamesRepository.findById(id);
+       if (opt.isEmpty()) return null;
+       Games game = opt.get();
+       game.setImage(imageUrl);
+        return gamesRepository.save(game);
+   }
+
     public boolean deleteGames(Long id) {
         if (!gamesRepository.existsById(id)) {
             return false;
@@ -41,7 +47,6 @@ public class GamesService {
         return true;
     }
 
-    // return null if not found (controller expects null -> 404)
     public Games getGamesById(Long id) {
         return gamesRepository.findById(id).orElse(null);
     }

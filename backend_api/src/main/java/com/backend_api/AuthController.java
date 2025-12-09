@@ -1,13 +1,16 @@
 package com.backend_api;
-
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import com.backend_api.customer.Customer;
 import com.backend_api.customer.CustomerService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import com.backend_api.customer.CustomerRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.security.Principal;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -16,7 +19,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api")
 public class AuthController {
-
+    @Autowired
+    private CustomerRepository customerRepository;
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final CustomerService customerService;
 
@@ -25,33 +29,11 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> me(HttpSession session) {
-        Object raw = session.getAttribute("customerId");
-        log.debug("/api/me sessionId={} attr={}", session.getId(), raw);
-        if (raw == null) return ResponseEntity.ok(Map.of());
-
-        Long id;
-        try { id = Long.valueOf(String.valueOf(raw)); } catch (Exception e) { return ResponseEntity.ok(Map.of("id", raw)); }
-
-        Customer c = customerService.getCustomerById(id);
-        if (c == null) return ResponseEntity.ok(Map.of("id", id));
-
-        Map<String,Object> out = new HashMap<>();
-        out.put("id", c.getId());
-        out.put("email", safeGet(c, "email", "getEmail"));
-
-        String name = safeGet(c, "name", "getName", "getFullName", "getUsername", "firstName", "getFirstName");
-        if (name != null) out.put("name", name);
-
-        String dob = safeGet(c, "dateOfBirth", "getDateOfBirth", "dob", "getDob", "birthDate", "getBirthDate");
-        if (dob != null) out.put("dateOfBirth", dob);
-
-        // favorite genre
-        String genre = safeGet(c, "favoriteGenre", "favorite_genre", "genre", "getFavoriteGenre", "getGenre");
-        if (genre != null) out.put("favoriteGenre", genre);
-
-        log.debug("/api/me -> {}", out);
-        return ResponseEntity.ok(out);
+    public ResponseEntity<?> getCurrentUser(Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).body("Not logged in");
+        Customer customer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (customer == null) return ResponseEntity.status(404).body("User not found");
+        return ResponseEntity.ok(customer);
     }
 
     private String safeGet(Object obj, String... names) {

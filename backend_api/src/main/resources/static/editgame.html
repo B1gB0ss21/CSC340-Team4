@@ -11,12 +11,15 @@
     .card{background:#0f1724;padding:20px;border-radius:10px}
     label{display:block;margin-top:10px;color:#cbd5e1}
     input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #1f2937;background:#071022;color:#e5e7eb;margin-top:6px}
-    .row{display:flex;gap:10px;margin-top:14px}
+    .row{display:flex;gap:10px;margin-top:14px;align-items:center}
     .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
     .btn-save{background:#10b981;color:#fff}
     .btn-cancel{background:#2563eb;color:#fff}
     .btn-delete{background:transparent;border:1px solid #ef4444;color:#ef4444;padding:10px;border-radius:8px}
     .muted{color:#9ca3af;margin-top:8px}
+    .cover-preview{margin-top:10px;border-radius:6px;overflow:hidden;background:#071022;width:240px;height:140px}
+    .cover-preview img{width:100%;height:100%;object-fit:cover;display:block}
+    .upload-controls{display:flex;gap:8px;align-items:center;margin-top:8px}
   </style>
 </head>
 <body>
@@ -37,6 +40,16 @@
 
         <label for="image">Image URL</label>
         <input id="image" />
+
+        <label for="coverFile">Upload cover image</label>
+        <div class="upload-controls">
+          <input type="file" id="coverFile" accept="image/*">
+          <button id="uploadCoverBtn" class="btn" type="button">Upload cover</button>
+          <div id="uploadStatus" class="muted" style="margin-left:8px"></div>
+        </div>
+        <div class="cover-preview" id="previewCoverWrap" aria-hidden="false" style="margin-top:10px">
+          <img id="previewCover" src="/images/placeholder.png" alt="Cover preview">
+        </div>
 
         <label for="description">Description</label>
         <textarea id="description" rows="6"></textarea>
@@ -71,10 +84,15 @@
       const saveBtn = document.getElementById('saveBtn');
       const deleteBtn = document.getElementById('deleteBtn');
       const cancelBtn = document.getElementById('cancelBtn');
+      const uploadBtn = document.getElementById('uploadCoverBtn');
+      const coverFile = document.getElementById('coverFile');
+      const previewImg = document.getElementById('previewCover');
+      const uploadStatus = document.getElementById('uploadStatus');
 
       function setLoading(loading){
         saveBtn.disabled = loading;
         deleteBtn.disabled = loading;
+        uploadBtn.disabled = loading;
         saveBtn.textContent = loading ? 'Saving...' : 'Save';
       }
 
@@ -92,6 +110,10 @@
           document.getElementById('status').value = g.status || 'Released';
           document.getElementById('price').value = (g.price != null) ? Number(g.price) : 0;
           document.getElementById('titleHeading').textContent = 'Edit: ' + (g.name || g.title || 'Untitled');
+
+          const imgUrl = g.image || `/images/games/cover-${id}.jpg` || '/images/placeholder.png';
+          previewImg.src = imgUrl;
+          previewImg.onerror = () => previewImg.src = '/images/placeholder.png';
         } catch(err){
           console.error(err);
           statusMsg.textContent = 'Could not load game.';
@@ -120,7 +142,6 @@
             const txt = await res.text().catch(()=>res.statusText);
             throw new Error(txt || res.status);
           }
-          // success -> go back to gamelist
           location.href = 'gamelist.html';
         } catch(err){
           console.error(err);
@@ -147,8 +168,68 @@
       });
 
       cancelBtn.addEventListener('click', ()=> location.href = 'gamelist.html');
+ 
+      uploadBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        uploadStatus.textContent = '';
+        if (!id) return alert('Missing game id');
+        if (!coverFile.files || !coverFile.files[0]) return alert('Choose an image first');
 
-      // init
+        const file = coverFile.files[0];
+        const fd = new FormData();
+        fd.append('file', file);
+
+        uploadBtn.disabled = true;
+        uploadStatus.textContent = 'Uploading...';
+        try {
+          const res = await fetch('/api/games/' + encodeURIComponent(id) + '/image', {
+            method: 'POST',
+            body: fd
+          });
+          if (!res.ok) {
+            const txt = await res.text().catch(()=>res.statusText);
+            uploadStatus.textContent = 'Upload failed';
+            alert('Upload failed: ' + txt);
+            return;
+          }
+          const j = await res.json();
+          const url = j.imageUrl;
+
+          previewImg.src = url;
+          previewImg.onerror = () => previewImg.src = '/images/placeholder.png';
+
+          try {
+            const saveRes = await fetch('/api/games/' + encodeURIComponent(id), {
+              method: 'PUT',
+              headers: {'Content-Type':'application/json','Accept':'application/json'},
+              body: JSON.stringify({ image: url })
+            });
+            if (!saveRes.ok) {
+              const txt = await saveRes.text().catch(()=>saveRes.statusText);
+              console.warn('Failed to persist image URL:', txt);
+            } else {
+          
+              try {
+                const games = JSON.parse(localStorage.getItem('games') || '[]');
+                const idx = games.findIndex(g=>String(g.id)===String(id) || String(g.gameId)===String(id));
+                if (idx !== -1) { games[idx].image = url; localStorage.setItem('games', JSON.stringify(games)); }
+              } catch(e){}
+            }
+          } catch(persistErr){
+            console.warn('Error saving image URL to game:', persistErr);
+          }
+
+          document.getElementById('image').value = url; 
+          uploadStatus.textContent = 'Upload successful';
+        } catch (err) {
+          console.error(err);
+          uploadStatus.textContent = 'Upload error';
+          alert('Upload error');
+        } finally {
+          uploadBtn.disabled = false;
+          setTimeout(()=> { uploadStatus.textContent = ''; }, 2500);
+        }
+      });
       fetchGame();
     })();
   </script>

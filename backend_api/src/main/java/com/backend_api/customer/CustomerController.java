@@ -75,32 +75,6 @@ public class CustomerController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, Object> body, HttpSession session) {
-        String email = (String) body.get("email");
-        String password = (String) body.get("password");
-        if (email == null || password == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "email and password required"));
-        }
-
-        Customer user = customerService.authenticate(email, password);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "invalid credentials"));
-        }
-
-        session.setAttribute("customerId", user.getId());
-
-        Map<String,Object> userDto = Map.of(
-            "id", user.getId(),
-            "name", user.getName(),
-            "email", user.getEmail(),
-            "dateOfBirth", user.getDateOfBirth(),
-            "favoriteGenre", user.getFavoriteGenre(),
-            "createdAt", user.getCreatedAt()
-        );
-
-        return ResponseEntity.ok(Map.of("id", user.getId(), "email", user.getEmail(), "user", userDto));
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable Long id) {

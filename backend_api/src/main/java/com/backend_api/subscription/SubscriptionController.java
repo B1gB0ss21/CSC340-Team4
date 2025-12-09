@@ -1,13 +1,13 @@
 package com.backend_api.subscription;
-
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.security.Principal;
 import java.util.Map;
 import java.util.List;
+import com.backend_api.customer.CustomerRepository;
+import com.backend_api.customer.Customer;
 
 @RestController
 @RequestMapping("/api/customers/{customerId}/subscriptions")
@@ -15,24 +15,27 @@ public class SubscriptionController {
 
     private static final Logger log = LoggerFactory.getLogger(SubscriptionController.class);
     private final SubscriptionService subscriptionService;
+    private final CustomerRepository customerRepository; 
 
-    public SubscriptionController(SubscriptionService subscriptionService) {
+    public SubscriptionController(SubscriptionService subscriptionService, CustomerRepository customerRepository) {
         this.subscriptionService = subscriptionService;
+        this.customerRepository = customerRepository; 
     }
 
     @PostMapping
     public ResponseEntity<?> subscribe(
             @PathVariable("customerId") Long customerId,
             @RequestBody Map<String, Object> body,
-            HttpSession session) {
+            Principal principal) { 
 
-        Object sess = session.getAttribute("customerId");
-        log.info("subscribe requested: pathCustomer={}, sessionCustomer={}, body={}", customerId, sess, body);
+        log.info("subscribe requested: pathCustomer={}, principal={}, body={}", customerId, principal != null ? principal.getName() : null, body);
 
-        Long sessionCustomerId = null;
-        try { sessionCustomerId = Long.valueOf(String.valueOf(sess)); } catch (Exception ignored) {}
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not logged in"));
+        }
 
-        if (sessionCustomerId == null || !sessionCustomerId.equals(customerId)) {
+        Customer sessionCustomer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (sessionCustomer == null || !sessionCustomer.getId().equals(customerId)) {
             return ResponseEntity.status(403).body(Map.of("error", "not authorized"));
         }
 
@@ -49,15 +52,16 @@ public class SubscriptionController {
     public ResponseEntity<?> unsubscribe(
             @PathVariable("customerId") Long customerId,
             @RequestBody(required = false) Map<String, Object> body,
-            HttpSession session) {
+            Principal principal) { 
 
-        Object sess = session.getAttribute("customerId");
-        log.info("unsubscribe requested: pathCustomer={}, sessionCustomer={}, body={}", customerId, sess, body);
+        log.info("unsubscribe requested: pathCustomer={}, principal={}, body={}", customerId, principal != null ? principal.getName() : null, body);
 
-        Long sessionCustomerId = null;
-        try { sessionCustomerId = Long.valueOf(String.valueOf(sess)); } catch (Exception ignored) {}
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not logged in"));
+        }
 
-        if (sessionCustomerId == null || !sessionCustomerId.equals(customerId)) {
+        Customer sessionCustomer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (sessionCustomer == null || !sessionCustomer.getId().equals(customerId)) {
             return ResponseEntity.status(403).body(Map.of("error", "not authorized"));
         }
 
@@ -70,14 +74,15 @@ public class SubscriptionController {
     }
 
     @GetMapping
-    public ResponseEntity<?> list(@PathVariable("customerId") Long customerId, HttpSession session) {
-        Object sess = session.getAttribute("customerId");
-        log.info("list subscriptions: pathCustomer={}, sessionCustomer={}", customerId, sess);
+    public ResponseEntity<?> list(@PathVariable("customerId") Long customerId, Principal principal) {
+        log.info("list subscriptions: pathCustomer={}, principal={}", customerId, principal != null ? principal.getName() : null);
 
-        Long sessionCustomerId = null;
-        try { sessionCustomerId = Long.valueOf(String.valueOf(sess)); } catch (Exception ignored) {}
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not logged in"));
+        }
 
-        if (sessionCustomerId == null || !sessionCustomerId.equals(customerId)) {
+        Customer sessionCustomer = customerRepository.findByEmail(principal.getName()).orElse(null);
+        if (sessionCustomer == null || !sessionCustomer.getId().equals(customerId)) {
             return ResponseEntity.status(403).body(Map.of("error", "not authorized"));
         }
 
