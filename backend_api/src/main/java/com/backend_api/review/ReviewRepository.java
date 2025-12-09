@@ -14,7 +14,8 @@ import java.util.List;
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByGames(Games games);
     List<Review> findByCustomer(Customer customer);
-
+    List<Review> findByGamesIdOrderByCreatedAtDesc(Long gameId);
+    
     @Query("select r from Review r join r.games g where g.developer = :developer")
     List<Review> findByGamesDeveloper(@Param("developer") Developer developer);
 }

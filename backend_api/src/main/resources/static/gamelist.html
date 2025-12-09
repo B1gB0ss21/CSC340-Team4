@@ -52,7 +52,7 @@
 
     async function loadCurrentUser() {
       try {
-        const r = await fetch('/api/me', { credentials: 'same-origin' });
+        const r = await fetch('/api/me', { credentials: 'include' });
         if (!r.ok) return null;
         const data = await r.json().catch(()=>null);
         if (data && data.id) {
@@ -83,7 +83,7 @@
 
     function card(g){
       const id = g.id ?? g.gameId ?? g._id ?? '';
-      const img = esc(g.image || '/assets/img/placeholder.png');
+       const img = esc(g.image || `/images/games/thumb-${id}.jpg` || '/images/placeholder.png');
       const title = esc(g.name || g.title || 'Untitled');
       const genre = esc(g.genre || '—');
       const desc = esc(g.description || '').slice(0,140);
@@ -122,7 +122,7 @@
       if (!id) return;
       if (!confirm('Delete this game?')) return;
       try {
-        const res = await fetch('/api/games/' + encodeURIComponent(id), { method: 'DELETE', credentials: 'same-origin' });
+        const res = await fetch('/api/games/' + encodeURIComponent(id), { method: 'DELETE', credentials: 'include' });
         if (!res.ok) {
           const text = await res.text().catch(()=> '');
           throw new Error(text || `HTTP ${res.status}`);
@@ -160,8 +160,8 @@
         const bodyJson = JSON.stringify({ planName: 'basic', gameId: numericGameId });
 
         const opts = !currently
-          ? { method: 'POST', credentials: 'same-origin', headers, body: bodyJson }
-          : { method: 'DELETE', credentials: 'same-origin', headers, body: JSON.stringify({ gameId: numericGameId }) };
+          ? { method: 'POST', credentials: 'include', headers, body: bodyJson }
+          : { method: 'DELETE', credentials: 'include', headers, body: JSON.stringify({ gameId: numericGameId }) };
 
         const r = await fetch(url, opts);
         const text = await r.text().catch(()=>null);

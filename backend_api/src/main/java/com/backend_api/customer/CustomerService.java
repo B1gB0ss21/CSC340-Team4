@@ -69,6 +69,10 @@ public class CustomerService {
         return customerRepository.findAll();
     }
 
+    public Customer getCustomerByUsername(String username) {
+    return customerRepository.findByEmail(username).orElse(null); 
+    }
+
     public List<Customer> searchByDob(String dob) {
         return customerRepository.findAll().stream()
                 .filter(c -> c.getDateOfBirth() != null && c.getDateOfBirth().contains(dob))

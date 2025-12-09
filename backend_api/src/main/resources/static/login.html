@@ -36,83 +36,60 @@
    
 
   <script>
-    const params = new URLSearchParams(location.search);
-    const returnTo = params.get('returnTo') || 'gamelist.html';
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get('returnTo') || 'gamelist.html';
 
-    async function checkSessionAndRedirect() {
-      try {
-        const r = await fetch('/api/me', { credentials: 'same-origin' });
-        if (r.ok) {
-          const data = await r.json().catch(()=>null);
-          if (data && data.id) {
-            location.href = returnTo;
-          }
+  async function checkSessionAndRedirect() {
+    try {
+      const r = await fetch('/api/me', { credentials: 'include' });
+      if (r.ok) {
+        const data = await r.json().catch(()=>null);
+        if (data && data.id) {
+          location.href = returnTo;
         }
-      } catch(e){
-
       }
-    }
+    } catch(e){}
+  }
 
-    window.addEventListener('DOMContentLoaded', checkSessionAndRedirect);
+  window.addEventListener('DOMContentLoaded', checkSessionAndRedirect);
 
-    const msgEl = document.getElementById('msg');
-    const signin = document.getElementById('signin');
-
+  const msgEl = document.getElementById('msg');
+  const signin = document.getElementById('signin');
+  
 async function signIn() {
-  msgEl.textContent = '';
   const email = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;
-  if (!email || !password) { msgEl.textContent = 'Enter email and password.'; return; }
-  signin.disabled = true; signin.textContent = 'Signing in…';
+  if (!email || !password) {
+    alert("Please enter both email and password.");
+    return;
+  }
+  const formData = new FormData();
+  formData.append('username', email);
+  formData.append('password', password);
 
-  try {
-    const res = await fetch('/api/customers/login', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+  const res = await fetch('/login', {
+    method: 'POST',
+    body: formData,
+    credentials: 'include' 
+  });
 
-    let payload = null;
-    const ct = res.headers.get('content-type') || '';
-    if (ct.includes('application/json')) payload = await res.json().catch(()=>null);
-    else payload = { message: await res.text().catch(()=>null) };
-
-    if (!res.ok || (payload && (payload.ok === false || payload.error))) {
-      const err = (payload && (payload.error || payload.message)) || ('Sign in failed (' + res.status + ')');
-      msgEl.textContent = err;
-      signin.disabled = false; signin.textContent = 'Sign in';
-      return;
+  if (res.ok) {
+    const me = await fetch('/api/me', { credentials: 'include' });
+    if (me.ok) {
+      location.href = 'gamelist.html';
+    } else {
+      alert('Login succeeded but session not established.');
     }
-
-    const me = await fetch('/api/me', { credentials: 'same-origin' });
-    if (!me.ok) {
-      msgEl.textContent = 'Login succeeded but session not established. Check server Set-Cookie.';
-      signin.disabled = false; signin.textContent = 'Sign in';
-      console.debug('POST /api/customers/login response headers:', Array.from(res.headers.entries()));
-      return;
-    }
-    const meData = await me.json().catch(()=>null);
-    if (!meData || !meData.id) {
-      msgEl.textContent = 'Login succeeded but /api/me returned no id.';
-      signin.disabled = false; signin.textContent = 'Sign in';
-      console.debug('/api/me body:', meData);
-      return;
-    }
-    location.href = returnTo;
-  } catch (e) {
-    console.error('login error', e);
-    msgEl.textContent = 'Network error: could not reach server';
-    signin.disabled = false; signin.textContent = 'Sign in';
+  } else {
+    alert('Login failed.');
   }
 }
 
-    signin.addEventListener('click', (e) => { e.preventDefault(); signIn(); });
-    document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); signIn(); }});
+  signin.addEventListener('click', (e) => { e.preventDefault(); signIn(); });
+  document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); signIn(); }});
 
-    document.getElementById('signupBtn').addEventListener('click', ()=> { location.href = 'usersignup.html?returnTo=' + encodeURIComponent(returnTo); });
-    document.getElementById('devSignupBtn').addEventListener('click', ()=> { location.href = 'dsignup.html?returnTo=' + encodeURIComponent(returnTo); });
-    document.getElementById('devSigninBtn').addEventListener('click', ()=> { location.href = 'dlogin.html?returnTo=' + encodeURIComponent(returnTo); });
-  </script>
-</body>
+  document.getElementById('signupBtn').addEventListener('click', ()=> { location.href = 'usersignup.html?returnTo=' + encodeURIComponent(returnTo); });
+  document.getElementById('devSignupBtn').addEventListener('click', ()=> { location.href = 'dsignup.html?returnTo=' + encodeURIComponent(returnTo); });
+  document.getElementById('devSigninBtn').addEventListener('click', ()=> { location.href = 'dlogin.html?returnTo=' + encodeURIComponent(returnTo); });
+</script>
 </html>

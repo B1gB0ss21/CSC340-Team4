@@ -1,5 +1,6 @@
 package com.backend_api.customer;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -22,12 +23,11 @@ public class Customer {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<com.backend_api.subscription.Subscription> subscriptions = new ArrayList<>();
 
-    // No-arg constructor required by JPA and by your controllers
     public Customer() {}
 
-    // Getters / Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

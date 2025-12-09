@@ -17,7 +17,6 @@ import java.util.OptionalDouble;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
 
-   
     public Double getAverageOverallRating(Games games) {
         List<Review> reviews = reviewRepository.findByGames(games);
         if (reviews == null || reviews.isEmpty()) return null;
@@ -48,7 +47,7 @@ public class ReviewService {
     public Review createReview(Review review) {
         double graphicsRating = review.getGraphicsRating() != null ? review.getGraphicsRating() : 0;
         double gameplayRating = review.getGameplayRating() != null ? review.getGameplayRating() : 0;
-      
+
         int overall = (int) Math.round((graphicsRating + gameplayRating) / 2.0);
         review.setOverallRating(overall);
         review.setCreatedAt(LocalDateTime.now());
@@ -63,7 +62,28 @@ public class ReviewService {
         }).orElse(null);
     }
 
- 
+    public Review createReviewInCode(Long gameId, Long customerId, int graphicsRating, int gameplayRating, String comment) {
+    Games game = new Games();
+    game.setId(gameId);
+
+    Customer customer = new Customer();
+    customer.setId(customerId);
+
+    Review review = new Review();
+    review.setGames(game);
+    review.setCustomer(customer);
+    review.setGraphicsRating(graphicsRating);
+    review.setGameplayRating(gameplayRating);
+    review.setComment(comment);
+    review.setCreatedAt(LocalDateTime.now());
+
+    // Calculate overall rating
+    int overall = (int) Math.round((graphicsRating + gameplayRating) / 2.0);
+    review.setOverallRating(overall);
+
+    return reviewRepository.save(review);
+}
+    
     public boolean deleteReview(Long id) {
         if (!reviewRepository.existsById(id)) {
             return false;
@@ -82,5 +102,29 @@ public class ReviewService {
 
     public List<Review> getReviewsByDeveloper(Developer developer) {
         return reviewRepository.findByGamesDeveloper(developer);
+    }
+
+    public List<Review> findByGameId(Long gameId) {
+        return reviewRepository.findByGamesIdOrderByCreatedAtDesc(gameId);
+    }
+
+    @Transactional
+    public Review saveForGame(Long gameId, Review review, Customer customer) {
+    Games g = new Games();
+    g.setId(gameId);
+    review.setGames(g);
+    review.setCustomer(customer); 
+
+    if (review.getCreatedAt() == null) review.setCreatedAt(LocalDateTime.now());
+        double graphicsRating = review.getGraphicsRating() != null ? review.getGraphicsRating() : 0;
+        double gameplayRating = review.getGameplayRating() != null ? review.getGameplayRating() : 0;
+        int overall = (int) Math.round((graphicsRating + gameplayRating) / 2.0);
+        review.setOverallRating(overall);
+    return reviewRepository.save(review);
+    }
+
+    @Transactional
+    public boolean deleteById(Long id) {
+        return deleteReview(id);
     }
 }
